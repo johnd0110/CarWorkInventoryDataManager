@@ -1,6 +1,4 @@
-from tkinter import *
-from tkinter import ttk
-
+from web import web_display
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -51,25 +49,11 @@ class Employee:
 class Labor:
     employee: Employee
     workDate: datetime
-    # Consider changes to pay rate and prorating
+    #TODO: Consider changes to pay rate and prorating
     hoursWorked: float
     workDescription: str
 
 
 if __name__ == '__main__':
 
-    class testApp:
-        def __init__(self, tkRoot):
-            self.root = tkRoot
-            self.root.title("Test Car Inventory Manager")
-
-            self.mainframe = ttk.Frame( self.root, padding=(3,3,12,12))
-            self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-
-            
-
-
-    root = Tk()
-    testApp(root)
-    root.mainloop()
-
+    pass

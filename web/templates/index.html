@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        table, td {border: 2px solid gray }
+    </style>
+    <meta charset="UTF-8">
+    <title>Test</title>
+</head>
+<body>
+<table>
+    {% for row in sqlTest %}
+        <tr>
+            {% for colVal in row %}
+                <td>{{colVal}}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</table>
+
+<form method="post" name="yes">
+    <label>test</label>
+    <input type="text" id="test" name="boo">
+</form>
+</body>
+</html>
