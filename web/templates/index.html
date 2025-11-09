@@ -5,22 +5,14 @@
         table, td {border: 2px solid gray }
     </style>
     <meta charset="UTF-8">
-    <title>Test</title>
+    <title>Main</title>
 </head>
 <body>
-<table>
-    {% for row in sqlTest %}
-        <tr>
-            {% for colVal in row %}
-                <td>{{colVal}}</td>
-            {% endfor %}
-        </tr>
-    {% endfor %}
-</table>
+    {% import 'modules/helper.html' as helper %}
+    {{ helper.displayResults(carssqlres, urlFuncName='car_page', rowLinkText='View', rowLinkKeyOrIdColumnName='HIDE_CarID') }}
+    {{ helper.generateInputFields('cars', carstablecolsdd) }}
 
-<form method="post" name="yes">
-    <label>test</label>
-    <input type="text" id="test" name="boo">
-</form>
+    {{ helper.displayResults(employeessqlres) }}
+    {{ helper.generateInputFields('employees', employeestablecolsdd) }}
 </body>
 </html>
