@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <style>
-        table, td { border: 2px solid gray }
+        table, td, th { border: 2px solid gray }
     </style>
     <meta charset="UTF-8">
     <title>Car</title>
@@ -13,9 +13,9 @@
     {{ helper.displayResults(carssqlres) }}
 
     {{ helper.displayResults(partssqlres) }}
-    {{ helper.generateInputFields('parts', partstablecolsdd) }}
+    {{ helper.generateInputFields('parts', partssqlres[1]) }}
 
-    {{ helper.displayResults(workeffortssqlres, nestedColumn='EmployeeName') }}
-    {{ helper.generateInputFields('workefforts', workeffortstablecolsdd) }}
+    {{ helper.displayResults(workeffortssqlres) }}
+    {{ helper.generateInputFields('workefforts', workeffortssqlres[1]) }}
 </body>
 </html>

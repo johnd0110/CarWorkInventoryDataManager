@@ -1,40 +1,63 @@
-import sqlite3
-from sql.sql_infrastructure import baseSQL
+from collections.abc import Iterable
+from typing import Protocol
+from sql.sql_infrastructure import baseSQL, columnNamesAndAttributes
 from flask import g
 
 SCHEMA_FILE_PATH = "..\\sql\\schema\\schema.sql"
+TEST_DATA_FILE_PATH = "..\\sql\\test\\test_data.sql"
 DATABASE_FILE_PATH = "sql\\databases\\CWI_Database.db"
-HIDE_COLUMN_PREFIX = 'hide_'
+
+class queryCaller(Protocol):
+    def __call__(self, param: int) -> tuple[list, columnNamesAndAttributes]:
+        ...
+
+def autoSetHiddenColumnsByNames(columnNames: Iterable[str]):
+    def autoSetHiddenColumnsByNames(func: queryCaller):
+        def wrapper(*args, **kwargs):
+            results, columnNamesAndAttrs = func(*args, **kwargs)
+            for columnName in columnNames:
+                columnNamesAndAttrs[columnName].visibility = "collapse"
+            return results, columnNamesAndAttrs
+        return wrapper
+    return autoSetHiddenColumnsByNames
 
 class carWorkInventorySQL(baseSQL):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def getCars(self):
-        return self.executeAndCommitSQLStatement("SELECT carID as HIDE_CarID, make, model, year, engineType, mileage FROM Cars", returnColumnNames=True)
+    @autoSetHiddenColumnsByNames(["carID"])
+    def getCars(self) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars", returnColumnNames=True)
 
-    def getCarById(self, carID):
-        return self.executeAndCommitSQLStatement("SELECT carID as HIDE_CarID, make, model, year, engineType, mileage FROM Cars WHERE carID = ?", (carID,), returnColumnNames=True)
+    @autoSetHiddenColumnsByNames(["carID"])
+    def getCarById(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars WHERE carID = ?", (carID,), returnColumnNames=True)
 
-    def getParts(self):
-        return self.executeAndCommitSQLStatement("SELECT partID as HIDE_partID, InCarID as HIDE_InCarID, partName, taxesPaid, shippingCost, price FROM Parts", returnColumnNames=True)
+    @autoSetHiddenColumnsByNames(["partID", "InCarID"])
+    def getParts(self) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT partID, InCarID, partName, taxesPaid, shippingCost, price FROM Parts", returnColumnNames=True)
 
-    def getPartsForCar(self, carID):
-        return self.executeAndCommitSQLStatement("SELECT partID as HIDE_partID, InCarID as HIDE_InCarID, partName, taxesPaid, shippingCost, price FROM Parts WHERE InCarID = ?", placeholderValues=(carID,), returnColumnNames=True)
+    @autoSetHiddenColumnsByNames(["partID", "InCarID"])
+    def getPartsForCar(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT partID, InCarID, partName, taxesPaid, shippingCost, price FROM Parts WHERE InCarID = ?", placeholderValues=(carID,), returnColumnNames=True)
 
-    def getEmployees(self):
-        return self.executeAndCommitSQLStatement("SELECT employeeKey as HIDE_employeeKey, employeeName FROM Employees", returnColumnNames=True)
+    @autoSetHiddenColumnsByNames(["employeeKey"])
+    def getEmployees(self) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT employeeKey, employeeName FROM Employees", returnColumnNames=True)
 
-    def getWorkEfforts(self):
-        return self.executeAndCommitSQLStatement("SELECT workEffortID as HIDE_workEffortID, carIDWorkedOn as HIDE_carIDWorkedOn, employeeWorkerKey as HIDE, workEffortDate, laborHours, estimatedPay, workType FROM WorkEfforts", returnColumnNames=True)
+    @autoSetHiddenColumnsByNames(["workEffortID", "carIDWorkedOn", "employeeWorkerKey"])
+    def getWorkEfforts(self) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT workEffortID, carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType FROM WorkEfforts", returnColumnNames=True)
 
-    def getWorkEffortByCar(self, carID):
-        return self.executeAndCommitSQLStatement("""SELECT workEffortID as HIDE_workEffortID, carIDWorkedOn as HIDE_carIDWorkedOn, employeeWorkerKey as HIDE_employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType 
+    @autoSetHiddenColumnsByNames(["workEffortID", "carIDWorkedOn", "employeeWorkerKey"])
+    def getWorkEffortByCar(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("""SELECT workEffortID, carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType 
                                                  FROM WorkEfforts 
                                                  WHERE CarIDWorkedOn = ?""", placeholderValues=(carID,), returnColumnNames=True)
 
-    def getWorkEffortByCarWithEmployees(self, carID):
-        return self.executeAndCommitSQLStatement("""SELECT we.workEffortID as HIDE_workEffortID, we.carIDWorkedOn as HIDE_carIDWorkedOn, we.employeeWorkerKey as HIDE_employeeWorkerKey, 
+    @autoSetHiddenColumnsByNames(["workEffortID", "carIDWorkedOn", "employeeWorkerKey"])
+    def getWorkEffortByCarWithEmployees(self, carID: int):
+        return self.executeAndCommitSQLStatement("""SELECT we.workEffortID, we.carIDWorkedOn, we.employeeWorkerKey, 
                                                  emp.EmployeeName, workEffortDate, laborHours, estimatedPay, workType 
                                                  FROM WorkEfforts we 
                                                  JOIN Employees emp 
@@ -49,7 +72,7 @@ class carWorkInventorySQL(baseSQL):
         :return: The instance of the car work inventory SQL database manager that's been stored in g.db
         """
         if 'db' not in g:
-            g.db = carWorkInventorySQL(databaseName=DATABASE_FILE_PATH)
+            g.db = carWorkInventorySQL(databaseName=DATABASE_FILE_PATH, rowFactory=carWorkInventorySQL.lowercaseKeyDictFactory)
         return g.db
 
     @staticmethod
@@ -65,7 +88,7 @@ class carWorkInventorySQL(baseSQL):
             db.cleanup()
 
     @staticmethod
-    def CWI_SQL_flask_initialize_db(app):
+    def CWI_SQL_flask_initialize_db(app, use_test_data=False):
         """
         Initialization function for a car work inventory SQL database as part of a Flask application.
         :param app: A Flask application
@@ -75,8 +98,9 @@ class carWorkInventorySQL(baseSQL):
             db = carWorkInventorySQL.CWI_SQL_flask_factory()
             with app.open_resource(SCHEMA_FILE_PATH) as f:
                 db.executeAndCommitSQLStatement(f.read().decode('utf-8'), IsScript=True)
-            db.connection.commit()
 
-    @staticmethod
-    def stripHideColumnPrefix(columnName: str):
-        return columnName.lstrip(HIDE_COLUMN_PREFIX)
+            if use_test_data:
+                with app.open_resource(TEST_DATA_FILE_PATH) as f:
+                    db.executeAndCommitSQLStatement(f.read().decode('utf-8'), IsScript=True)
+
+            db.connection.commit()

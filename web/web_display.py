@@ -1,15 +1,11 @@
 from argparse import ArgumentError
-import sqlite3
-import sql.carworkinvsql
+from typing import Any
 from sql.carworkinvsql import carWorkInventorySQL
-from flask import Flask, render_template, request
+from sql.sql_infrastructure import lowerCaseKeyDict, columnNamesAndAttributes
+from flask import Flask, render_template, request, g
 from itertools import groupby
-
-def addDropDownDataToColumnNameList(columnNameList: list[str], columnNamesAndDropDownData: dict[str: list[sqlite3.Row]] = None):
-    if len(columnNameList) == 0:
-        raise ArgumentError("Please provide at least one column name.")
-
-    return {columnName.lower() : (None if columnNamesAndDropDownData is None else columnNamesAndDropDownData.get(columnName.lower())) for columnName in columnNameList}
+from collections.abc import Iterable
+from mappings.textMap import textMapFactory
 
 def addItemToDictionary(dictionary, key, value):
     key = key.lower()
@@ -18,8 +14,8 @@ def addItemToDictionary(dictionary, key, value):
     else:
         dictionary[key] = value
 
-def replace_dict_empty_string_vals_with_none(dict):
-    return { key : (None if val == '' else val) for key, val in dict.items()}
+def replace_dict_empty_string_vals_with_none(dictToModify: dict[str, Any]):
+    return { key : (None if val == '' else val) for key, val in dictToModify.items()}
 
 def initialize_app():
     """
@@ -28,103 +24,163 @@ def initialize_app():
     """
     new_app = Flask(__name__)
     new_app.teardown_appcontext(carWorkInventorySQL.CWI_SQL_flask_teardown)
-    carWorkInventorySQL.CWI_SQL_flask_initialize_db(new_app)
+    carWorkInventorySQL.CWI_SQL_flask_initialize_db(new_app, True)
     return new_app
 
 app = initialize_app()
 
-@app.template_test('isHideColumnName')
-def isHideColumnName(columnName: str):
-    return columnName.lower().startswith(sql.carworkinvsql.HIDE_COLUMN_PREFIX)
+@app.template_filter('groupSqlResultsByColumns')
+def groupSqlResultsByColumns(sqlresults, columnNames: Iterable[str]):
+    return groupby(sqlresults, lambda sqlrow: tuple([sqlrow[columnName] for columnName in columnNames]))
 
-@app.template_filter('groupSqlResultsByColumn')
-def groupSqlResultsByColumn(sqlresults, columnName: str):
-    print("yes", columnName)
-    return groupby(sqlresults, lambda sqlrow: sqlrow[columnName])
+@app.template_filter('getNewSubsetByColumnNames')
+def getNewSubsetByColumnNames(columnsAndAttributes, columnNamesToFilterBy: Iterable[str], include: bool = True):
+    lowerColumnNames = [columnName.lower() for columnName in columnNamesToFilterBy]
+    resultDict = {}
+    for columnName, attributes in columnsAndAttributes.items():
+        if include:
+            if columnName in lowerColumnNames:
+                resultDict[columnName] = attributes
+        else:
+            if columnName not in lowerColumnNames:
+                resultDict[columnName] = attributes
 
-@app.template_filter('getColumnVisiblityList')
-def getColumnVisiblityList(columnNameList: list[str]):
-    return ["collapse" if isHideColumnName(columnName) else "initial" for index, columnName in enumerate(columnNameList)]
+    return columnNamesAndAttributes(resultDict)
 
 @app.route('/')
 def main_page():
+    _ = textMapFactory()
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
-    carssqlresult, carstablecolumns = sqlapp.getCars()
 
-    carstablecolumns = addDropDownDataToColumnNameList(carstablecolumns)
+    carsSqlResult = sqlapp.getCars()
+    carsSqlResult[1]["make"].canBeInput = True
+    carsSqlResult[1]["make"].requiredInput = True
 
-    employeessqlresult, employeestablecolumns = sqlapp.getEmployees()
+    carsSqlResult[1]["model"].canBeInput = True
+    carsSqlResult[1]["model"].requiredInput = True
 
-    employeestablecolumns = addDropDownDataToColumnNameList(employeestablecolumns)
+    carsSqlResult[1]["year"].canBeInput = True
+    carsSqlResult[1]["year"].requiredInput = True
 
+    carsSqlResult[1]["engineType"].canBeInput = True
+    carsSqlResult[1]["engineType"].requiredInput = True
+
+    carsSqlResult[1]["mileage"].canBeInput = True
+    carsSqlResult[1]["mileage"].requiredInput = True
+
+    carsSqlResult[1]["initialCost"].canBeInput = True
+    carsSqlResult[1]["initialCost"].requiredInput = True
+
+    employeesSqlResult = sqlapp.getEmployees()
+
+    employeesSqlResult[1]["employeeName"].canBeInput = True
+    employeesSqlResult[1]["employeeName"].requiredInput = True
 
     return render_template("index.html",
-                           carssqlres=carssqlresult,
-                           carstablecolsdd=carstablecolumns,
-                           employeessqlres=employeessqlresult,
-                           employeestablecolsdd=employeestablecolumns)
+                           carssqlres=carsSqlResult,
+                           employeessqlres=employeesSqlResult)
 
 @app.post('/')
 def main_page_post():
+    _ = textMapFactory()
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
     #TODO: Handle when invalid values are provided to the INSERT
     match request.form["formid"].lower():
         case "cars":
             _ = sqlapp.executeAndCommitSQLStatement(
-                "INSERT INTO Cars(make, model, year, engineType, mileage) VALUES (:make, :model, :year, :enginetype, :mileage)",
-                replace_dict_empty_string_vals_with_none(request.form))
+                "INSERT INTO Cars(make, model, year, engineType, mileage, initialcost) VALUES (:make, :model, :year, :enginetype, :mileage, :initialcost)",
+                lowerCaseKeyDict(replace_dict_empty_string_vals_with_none(request.form)).lowercaseKeyDict)
         case "parts":
             raise NotImplementedError
         case "employees":
             _ = sqlapp.executeAndCommitSQLStatement(
                 "INSERT INTO Employees(employeeName) VALUES (:employeename)",
-                replace_dict_empty_string_vals_with_none(request.form))
+                lowerCaseKeyDict(replace_dict_empty_string_vals_with_none(request.form)).lowercaseKeyDict)
         case "workefforts":
             raise NotImplementedError
         case _:
             raise NotImplementedError
 
-    carssqlresult, carstablecolumns = sqlapp.getCars()
+    carsSqlResult = sqlapp.getCars()
+    carsSqlResult[1]["make"].canBeInput = True
+    carsSqlResult[1]["make"].requiredInput = True
 
-    carstablecolumns = addDropDownDataToColumnNameList(carstablecolumns)
+    carsSqlResult[1]["model"].canBeInput = True
+    carsSqlResult[1]["model"].requiredInput = True
 
-    employeessqlresult, employeestablecolumns = sqlapp.getEmployees()
+    carsSqlResult[1]["year"].canBeInput = True
+    carsSqlResult[1]["year"].requiredInput = True
 
-    employeestablecolumns = addDropDownDataToColumnNameList(employeestablecolumns)
+    carsSqlResult[1]["engineType"].canBeInput = True
+    carsSqlResult[1]["engineType"].requiredInput = True
+
+    carsSqlResult[1]["mileage"].canBeInput = True
+    carsSqlResult[1]["mileage"].requiredInput = True
+
+    carsSqlResult[1]["initialCost"].canBeInput = True
+    carsSqlResult[1]["initialCost"].requiredInput = True
+
+    employeesSqlResult = sqlapp.getEmployees()
+
+    employeesSqlResult[1]["employeeName"].canBeInput = True
+    employeesSqlResult[1]["employeeName"].requiredInput = True
 
     return render_template("index.html",
-                           carssqlres=carssqlresult,
-                           carstablecolsdd=carstablecolumns,
-                           employeessqlres=employeessqlresult,
-                           employeestablecolsdd=employeestablecolumns)
+                           carssqlres=carsSqlResult,
+                           employeessqlres=employeesSqlResult)
 
 @app.route('/car/<int:keyorid>')
 def car_page(keyorid):
+    _ = textMapFactory()
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
 
-    carssqlresult, carstablecolumns = sqlapp.getCarById(keyorid)
+    partsSqlResult = sqlapp.getPartsForCar(keyorid)
 
-    carstablecolumns = addDropDownDataToColumnNameList(carstablecolumns)
+    partsSqlResult[1]["partName"].canBeInput = True
+    partsSqlResult[1]["partName"].requiredInput = True
 
-    partssqlresult, partstablecolumns = sqlapp.getPartsForCar(keyorid)
+    partsSqlResult[1]["taxesPaid"].canBeInput = True
+    partsSqlResult[1]["taxesPaid"].requiredInput = True
 
-    partstablecolumns = addDropDownDataToColumnNameList(partstablecolumns)
+    partsSqlResult[1]["shippingCost"].canBeInput = True
+    partsSqlResult[1]["shippingCost"].requiredInput = True
 
-    employeessqlresult, _ = sqlapp.getEmployees()
+    partsSqlResult[1]["price"].canBeInput = True
+    partsSqlResult[1]["price"].requiredInput = True
 
-    workeffortssqlresult, workeffortstablecolumns = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
+    employeessqlresult = sqlapp.getEmployees()
 
-    workeffortstablecolumns = addDropDownDataToColumnNameList(workeffortstablecolumns, {"employeename": employeessqlresult})
+    workeffortssqlresult = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
+
+    workeffortssqlresult[1]["employeeWorkerKey"].nestedOn = True
+    workeffortssqlresult[1]["employeeWorkerKey"].nestPriority = 100
+
+    workeffortssqlresult[1]["employeeName"].canBeInput = True
+    workeffortssqlresult[1]["employeeName"].requiredInput = True
+    workeffortssqlresult[1]["employeeName"].dropDownData = ("employeeKey", employeessqlresult[0], "employeeWorkerKey")
+    workeffortssqlresult[1]["employeeName"].nestedOn = True
+    workeffortssqlresult[1]["employeeName"].nestPriority = 100
+
+    workeffortssqlresult[1]["workEffortDate"].canBeInput = True
+    workeffortssqlresult[1]["workEffortDate"].requiredInput = True
+
+    workeffortssqlresult[1]["laborHours"].canBeInput = True
+    workeffortssqlresult[1]["laborHours"].requiredInput = True
+
+    workeffortssqlresult[1]["estimatedPay"].canBeInput = True
+    workeffortssqlresult[1]["estimatedPay"].requiredInput = True
+
+    workeffortssqlresult[1]["workType"].canBeInput = True
+    workeffortssqlresult[1]["workType"].requiredInput = True
+
     return render_template("car_view.html",
-                           carssqlres=carssqlresult,
-                           carstablecolsdd=carstablecolumns,
-                           partssqlres=partssqlresult,
-                           partstablecolsdd=partstablecolumns,
-                           workeffortssqlres=workeffortssqlresult,
-                           workeffortstablecolsdd=workeffortstablecolumns)
+                           carssqlres=sqlapp.getCarById(keyorid),
+                           partssqlres=partsSqlResult,
+                           workeffortssqlres=workeffortssqlresult)
 
 @app.post('/car/<int:keyorid>')
 def car_page_post(keyorid):
+    _ = textMapFactory()
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
 
     match request.form["formid"].lower():
@@ -135,36 +191,58 @@ def car_page_post(keyorid):
             addItemToDictionary(req_form_dict, 'incarid', keyorid)
             _ = sqlapp.executeAndCommitSQLStatement(
                 "INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price) VALUES (:incarid, :partname, :taxespaid, :shippingcost, :price)",
-                req_form_dict)
+                lowerCaseKeyDict(req_form_dict).lowercaseKeyDict)
         case "employees":
             raise NotImplementedError
         case "workefforts":
             req_form_dict = replace_dict_empty_string_vals_with_none(request.form)
             addItemToDictionary(req_form_dict, 'carIDWorkedOn', keyorid)
             _ = sqlapp.executeAndCommitSQLStatement(
-                "INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType) VALUES (:caridworkedon, :employeeworkerkey, :workeffortdate, laborhours, estimatedpay, worktype)",
-                req_form_dict)
+                "INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType) VALUES (:caridworkedon, :employeeworkerkey, :workeffortdate, :laborhours, :estimatedpay, :worktype)",
+                lowerCaseKeyDict(req_form_dict).lowercaseKeyDict)
         case _:
             raise NotImplementedError
 
-    carssqlresult, carstablecolumns = sqlapp.getCarById(keyorid)
+    partsSqlResult = sqlapp.getPartsForCar(keyorid)
 
-    carstablecolumns = addDropDownDataToColumnNameList(carstablecolumns)
+    partsSqlResult[1]["partName"].canBeInput = True
+    partsSqlResult[1]["partName"].requiredInput = True
 
-    partssqlresult, partstablecolumns = sqlapp.getPartsForCar(keyorid)
+    partsSqlResult[1]["taxesPaid"].canBeInput = True
+    partsSqlResult[1]["taxesPaid"].requiredInput = True
 
-    partstablecolumns = addDropDownDataToColumnNameList(partstablecolumns)
+    partsSqlResult[1]["shippingCost"].canBeInput = True
+    partsSqlResult[1]["shippingCost"].requiredInput = True
 
-    employeessqlresult, _ = sqlapp.getEmployees()
+    partsSqlResult[1]["price"].canBeInput = True
+    partsSqlResult[1]["price"].requiredInput = True
 
-    workeffortssqlresult, workeffortstablecolumns = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
+    employeessqlresult = sqlapp.getEmployees()
 
-    #TODO: Create a custom column data type for determining different attributes like whether it should have a drop down or is a required input
-    workeffortstablecolumns = addDropDownDataToColumnNameList(workeffortstablecolumns, {"employeename": employeessqlresult})
+    workeffortssqlresult = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
+
+    workeffortssqlresult[1]["employeeWorkerKey"].nestedOn = True
+    workeffortssqlresult[1]["employeeWorkerKey"].nestPriority = 100
+
+    workeffortssqlresult[1]["employeeName"].canBeInput = True
+    workeffortssqlresult[1]["employeeName"].requiredInput = True
+    workeffortssqlresult[1]["employeeName"].dropDownData = ("employeeKey", employeessqlresult[0], "employeeWorkerKey")
+    workeffortssqlresult[1]["employeeName"].nestedOn = True
+    workeffortssqlresult[1]["employeeName"].nestPriority = 100
+
+    workeffortssqlresult[1]["workEffortDate"].canBeInput = True
+    workeffortssqlresult[1]["workEffortDate"].requiredInput = True
+
+    workeffortssqlresult[1]["laborHours"].canBeInput = True
+    workeffortssqlresult[1]["laborHours"].requiredInput = True
+
+    workeffortssqlresult[1]["estimatedPay"].canBeInput = True
+    workeffortssqlresult[1]["estimatedPay"].requiredInput = True
+
+    workeffortssqlresult[1]["workType"].canBeInput = True
+    workeffortssqlresult[1]["workType"].requiredInput = True
+
     return render_template("car_view.html",
-                           carssqlres=carssqlresult,
-                           carstablecolsdd=carstablecolumns,
-                           partssqlres=partssqlresult,
-                           partstablecolsdd=partstablecolumns,
-                           workeffortssqlres=workeffortssqlresult,
-                           workeffortstablecolsdd=workeffortstablecolumns)
+                           carssqlres=sqlapp.getCarById(keyorid),
+                           partssqlres=partsSqlResult,
+                           workeffortssqlres=workeffortssqlresult)

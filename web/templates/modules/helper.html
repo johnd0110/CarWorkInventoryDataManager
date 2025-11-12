@@ -1,33 +1,34 @@
-{% macro generateTableHeadersFromList(headerList) %}
+{% macro generateTableHeadersFromColumnList(columnList) %}
     <tr>
-        {% for header in headerList %}
-            <th>{{header}}</th>
+        {% for columnName in columnList %}
+            <th>{{g.textMap[columnName]}}</th>
         {% endfor %}
     </tr>
 {% endmacro %}
 
-{% macro generateColumnGroupsForSqlColumns(tablecolumns) %}
-    {% set columnVisiblityList = tablecolumns | getColumnVisiblityList %}
-    {% if columnVisiblityList %}
+{% macro generateColumnGroupsForSqlColumns(tableColumns) %}
+    {% if tableColumns %}
         <colgroup>
-            {% for columnVisibility in columnVisiblityList %}
-                <col span="1" style={{"visibility:" ~ columnVisibility}}>
+            {% for columnAttributes in tableColumns.values() %}
+                <col span="1" style={{"visibility:" ~ columnAttributes.visibility}}>
             {% endfor %}
         </colgroup>
     {% endif %}
 {% endmacro %}
 
-{% macro displayResults(sqlresults, nestedColumn='', urlFuncName='', rowLinkText='Placeholder', rowLinkKeyOrIdColumnName='') %}
-    {% if sqlresults %}
+{% macro displayResults(sqlresults, urlFuncName='', rowLinkText='Placeholder', rowLinkKeyOrIdColumnName='') %}
+    {% set sqlResultData = sqlresults[0] %}
+    {% if sqlResultData %}
         <table>
-            {% set tablecolumns = sqlresults[0].keys() %}
-            {% if not nestedColumn %}
-                    {{ generateColumnGroupsForSqlColumns(tablecolumns) }}
-                    {{ generateTableHeadersFromList(tablecolumns) }}
+            {% set tableColumns = sqlresults[1] %}
+            {% set columnGroupsToNestOn, columnsToNestOn = tableColumns.getColumnsToNestOnOrderedByPriority() %}
+            {% if not columnsToNestOn %}
+                    {{ generateColumnGroupsForSqlColumns(tableColumns) }}
+                    {{ generateTableHeadersFromColumnList(tableColumns) }}
 
-                    {% for row in sqlresults %}
+                    {% for row in sqlResultData %}
                         <tr>
-                            {% for colVal in row %}
+                            {% for colVal in row.values() %}
                                 <td>{{colVal}}</td>
                             {% endfor %}
                             {% if urlFuncName and rowLinkKeyOrIdColumnName %}
@@ -36,51 +37,60 @@
                         </tr>
                     {% endfor %}
             {% else %}
-                {% set tablecolumns =  tablecolumns | reject('eq', nestedcolumn) %}
-                {% for key, group in sqlresults | groupSqlResultsByColumn(nestedColumn) %}
-                    <td>{{key}}</td>
-                    <table>
-                        {{ generateColumnGroupsForSqlColumns(tablecolumns) }}
-                        {{ generateTableHeadersFromList(tablecolumns) }}
-                        {% for row in group %}
-                            <tr>
-                                {% for columnName in tablecolumns %}
-                                    <td>{{row[columnName]}}</td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                    </table>
+                {% set filteredColumnNames = tableColumns | getNewSubsetByColumnNames(columnsToNestOn, false) %}
+                {% set nestColumnAttributes = tableColumns | getNewSubsetByColumnNames(columnsToNestOn) %}
+                {{ generateColumnGroupsForSqlColumns(nestColumnAttributes) }}
+                {% for nestColumnGroup in columnGroupsToNestOn %}
+                    {% for groupKey, group in sqlResultData | groupSqlResultsByColumns(nestColumnGroup) %}
+                        <tr>
+                            {% for keyval in groupKey %}
+                                <td>{{keyval}}</td>
+                            {% endfor %}
+                            <td>
+                                <table>
+                                    {{ generateColumnGroupsForSqlColumns(filteredColumnNames) }}
+                                    {{ generateTableHeadersFromColumnList(filteredColumnNames) }}
+                                    {% for row in group %}
+                                        <tr>
+                                            {% for columnName in filteredColumnNames %}
+                                                <td>{{row[columnName]}}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                            </td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             {% endif %}
         </table>
     {% else %}
-        <p> No results found or no column names provided. </p>
+        <p> No results found.</p>
     {% endif %}
 {% endmacro %}
 
-{% macro generateInputFields(formID, tablecolumnsanddropdown) %}
-    <form method="post" autocomplete="off" name="addrow">
-        {% for columnName, dropDownData in tablecolumnsanddropdown.items() %}
-            {% if columnName is not isHideColumnName %}
-                <label> {{ columnName }} </label>
-                <br/>
-                {% if dropDownData is not none %}
-                    {% if dropDownData %}
-                        <select id={{columnName}} name={{columnName}}>
-                            {% for val in dropDownData %}
-                                <option value={{val[columnName]}}>{{val[columnName]}}</option>
+{% macro generateInputFields(formID, tableColumnsAndAttributes) %}
+    {% if tableColumnsAndAttributes %}
+        <form method="post" autocomplete="off" name="addrow">
+            {% for columnName, attributes in tableColumnsAndAttributes.items() %}
+                {% if attributes.canBeInput %}
+                    <label> {{ columnName }} </label>
+                    <br/>
+                    {% set dropDownData = attributes.dropDownData %}
+                    {% if dropDownData is not none %}
+                        <select id={{dropDownData[2]}} name={{dropDownData[2]}} {% if not dropDownData %} disabled {% endif %} {% if attributes.requiredInput %} required {% endif %}>
+                            {% for row in dropDownData[1] %}
+                                <option value={{row[dropDownData[0]]}}>{{row[columnName]}}</option>
                             {% endfor %}
                         </select>
                     {% else %}
-                        <select id={{columnName}} name={{columnName}} disabled></select>
+                        <input type="text" id={{columnName}} name={{columnName}} {% if attributes.requiredInput %} required {% endif %} >
                     {% endif %}
-                {% else %}
-                    <input type="text" id={{columnName}} name={{columnName}}>
+                    <br/>
                 {% endif %}
-                <br/>
-            {% endif %}
-        {% endfor %}
-        <input type="submit" value="submit">
-        <input type="hidden" id={{formID}} name="formid" value={{formID}}>
-    </form>
+            {% endfor %}
+            <input type="submit" value="submit">
+            <input type="hidden" id={{formID}} name="formid" value={{formID}}>
+        </form>
+    {% endif %}
 {% endmacro %}

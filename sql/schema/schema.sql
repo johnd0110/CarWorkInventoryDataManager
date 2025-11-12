@@ -8,7 +8,8 @@ CREATE TABLE Cars(carID INTEGER PRIMARY KEY,
                   model TEXT NOT NULL,
                   "year" NUMERIC NOT NULL,
                   engineType TEXT NOT NULL,
-                  mileage INTEGER NOT NULL DEFAULT 0);
+                  mileage INTEGER NOT NULL DEFAULT 0,
+                  initialCost NUMERIC NOT NULL);
 
 CREATE TABLE Parts(partID INTEGER PRIMARY KEY,
                    InCarID INTEGER NOT NULL,
