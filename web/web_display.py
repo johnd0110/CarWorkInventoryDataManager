@@ -28,7 +28,7 @@ def addGAttr(attributeName: str, retrievalFunc: Callable) -> Callable:
 def addItemToDictionary(dictionary, key, value):
     key = key.lower()
     if key in dictionary:
-        raise ArgumentError("Duplicate key found")
+        raise ArgumentError(message="Duplicate key found")
     else:
         dictionary[key] = value
 

@@ -1,4 +1,6 @@
 {% macro generateTableHeadersFromColumnList(columnNamesAndAttrs) %}
+    {# Generates table headers for the provided column Names and attributes object.
+       May dynamically show an empty header if the makeTableHeader Column Web Attribute is set to False #}
     <tr>
         {% for columnName, attributes in columnNamesAndAttrs.items() %}
             <th> {% if attributes.makeTableHeader %} {{g.textMap[columnName]}} {% endif %} </th>
@@ -7,6 +9,8 @@
 {% endmacro %}
 
 {% macro generateColumnGroupsForSqlColumns(tableColumnsAndAttrs) %}
+    {# Generates column groups for the provided table columns and attributes object.
+       One Col Tag is generated for each column with the visibility attribute set according to the associated ColumnWebAttributes instance #}
     {% if tableColumnsAndAttrs %}
         <colgroup>
             {% for columnAttributes in tableColumnsAndAttrs.values() %}
@@ -17,12 +21,16 @@
 {% endmacro %}
 
 {% macro displayResults(sqlresults) %}
+    {# Generates a HTML table representing the provided SQL Query results: sqlresults
+       The styling of the table is dynamically configured on a per-column basis as determined by the ColumnWebAttributes object associated with each column #}
     {% set sqlResultData = sqlresults[0] %}
     {% if sqlResultData %}
         <table>
             {% set tableColumns = sqlresults[1] %}
             {% set columnGroupsToNestOn, columnsToNestOn = tableColumns.getColumnsToNestOnOrderedByPriority() %}
             {% if not columnsToNestOn %}
+                    {# Build out a regular table for the provided SQL query results #}
+
                     {{ generateColumnGroupsForSqlColumns(tableColumns) }}
                     {{ generateTableHeadersFromColumnList(tableColumns) }}
 
@@ -47,16 +55,21 @@
                         </tr>
                     {% endfor %}
             {% else %}
+                {# Build out a nested table with the SQL results data grouped by the defined nested columns in columnGroupsToNestOn #}
+
                 {% set filteredColumnNames = tableColumns | getNewSubsetByColumnNames(columnsToNestOn, false) %}
                 {% set nestColumnAttributes = tableColumns | getNewSubsetByColumnNames(columnsToNestOn) %}
                 {{ generateColumnGroupsForSqlColumns(nestColumnAttributes) }}
+
                 {% for nestColumnGroup in columnGroupsToNestOn %}
                     {% for groupKey, group in sqlResultData | groupSqlResultsByColumns(nestColumnGroup) %}
                         <tr>
+                            {# These Nest Columns could be individually set to be collapsed as defined by their attributes #}
                             {% for keyval in groupKey %}
                                 <td>{{keyval}}</td>
                             {% endfor %}
                             <td>
+                                {# The nested table which consists of data grouped by the nest column data #}
                                 <table>
                                     {{ generateColumnGroupsForSqlColumns(filteredColumnNames) }}
                                     {{ generateTableHeadersFromColumnList(filteredColumnNames) }}
@@ -80,8 +93,12 @@
 {% endmacro %}
 
 {% macro generateInputFields(formID, tableColumnsAndAttributes) %}
+    {# Builds out a form which gathers data for a SQL Insert dynamically based on the provided column names and attributes object.
+       Form ID determines which table to insert into (Refer to web/web_display.py for the defined Form IDs). #}
     {% if tableColumnsAndAttributes %}
         <form method="post" autocomplete="off" name="addrow">
+            {# Build out the form inputs regardless, but they will be disabled if any one of the input fields have invalid configuration,
+            in order to prevent a user from triggering an INSERT error and to signal an error via the UI #}
             <fieldset {% if not tableColumnsAndAttributes.HasValidInputs() %} disabled {% endif %}>
                 <legend> Add New Entry </legend>
                 {% for columnName, attributes in tableColumnsAndAttributes.items() %}
@@ -108,7 +125,7 @@
                     {% endif %}
                 {% endfor %}
                 <input type="submit" value="submit">
-                <input type="hidden" id={{formID}} name="formid" value={{formID}}>
+                <input type="hidden" id={{formID}} name="formid" value={{formID}}> {# Hidden input field so that we can store an identifier for the form submission allowing us to know which table to insert into #}
             </fieldset>
         </form>
     {% endif %}
