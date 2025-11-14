@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from typing import Protocol
-from sql.sql_infrastructure import baseSQL, columnNamesAndAttributes
+from sql.sql_infrastructure import baseSQL, columnNamesAndAttributes, VisibilityOptions
 from flask import g
 
 SCHEMA_FILE_PATH = "..\\sql\\schema\\schema.sql"
@@ -16,7 +16,7 @@ def autoSetHiddenColumnsByNames(columnNames: Iterable[str]):
         def wrapper(*args, **kwargs):
             results, columnNamesAndAttrs = func(*args, **kwargs)
             for columnName in columnNames:
-                columnNamesAndAttrs[columnName].visibility = "collapse"
+                columnNamesAndAttrs[columnName].visibility = VisibilityOptions.COLLAPSE.value
             return results, columnNamesAndAttrs
         return wrapper
     return autoSetHiddenColumnsByNames
@@ -28,6 +28,10 @@ class carWorkInventorySQL(baseSQL):
     @autoSetHiddenColumnsByNames(["carID"])
     def getCars(self) -> tuple[list, columnNamesAndAttributes]:
         return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars", returnColumnNames=True)
+
+    @autoSetHiddenColumnsByNames(["carID"])
+    def getCarsWithViewEditLinks(self) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost, 'View' as viewLink, 'Edit' as editLink FROM Cars", returnColumnNames=True)
 
     @autoSetHiddenColumnsByNames(["carID"])
     def getCarById(self, carID: int) -> tuple[list, columnNamesAndAttributes]:

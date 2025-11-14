@@ -4,13 +4,14 @@
     <style>
         table, td, th {border: 2px solid gray;}
         table {border-collapse: collapse;}
+        fieldset {max-inline-size: fit-content;}
     </style>
     <meta charset="UTF-8">
     <title>Main</title>
 </head>
 <body>
     {% import 'modules/helper.html' as helper %}
-    {{ helper.displayResults(carssqlres, urlFuncName='car_page', rowLinkText='View', rowLinkKeyOrIdColumnName='carID') }}
+    {{ helper.displayResults(carssqlres) }}
     {{ helper.generateInputFields('cars', carssqlres[1]) }}
 
     {{ helper.displayResults(employeessqlres) }}

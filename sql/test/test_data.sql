@@ -70,52 +70,52 @@ INSERT INTO Employees(employeeName) VALUES
 
 -- WorkEfforts Table Test Data
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 
 INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-SELECT carID, employeeKey, datetime(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
+SELECT carID, employeeKey, date(strftime('%s', '1990-01-01 00:00:00') + abs(random() % (strftime('%s', '2025-01-01 00:00:00') - strftime('%s', '1990-01-01 00:00:00'))), 'unixepoch'), abs(RANDOM() % 24), abs(RANDOM() % 1000), abs(RANDOM() % 100)
 FROM Cars, Employees
 ORDER BY RANDOM() LIMIT 1;
 

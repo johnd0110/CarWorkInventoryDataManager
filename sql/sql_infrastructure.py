@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from collections.abc import MutableMapping
 from typing import Any
 from itertools import groupby
+from enum import StrEnum, unique
 
 class lowerCaseKeyDict(MutableMapping):
     def __init__(self, aDictionary: dict[str, Any] = {}):
@@ -29,14 +30,71 @@ class lowerCaseKeyDict(MutableMapping):
     def __str__(self):
         return str(self.lowercaseKeyDict)
 
+@unique
+class InputTypes(StrEnum):
+    NOTINPUT = ""
+    TEXT = "text"
+    DATE = "date"
+    NUMBER = "number"
+    DROPDOWN = "dropdown"
+
+    @staticmethod
+    def getInputTypes():
+        return InputTypes
+
+@unique
+class VisibilityOptions(StrEnum):
+    INITIAL = "initial"
+    COLLAPSE = "collapse"
+
 @dataclass
 class columnWebAttributes:
-    dropDownData: tuple[str, list] = None
-    visibility: str = "initial"
-    canBeInput: bool = False
+    """
+    Attributes for a dynamically built HTML table column.
+    dropDownData: A Tuple consisting of:
+                  The SQL Column Name to pull data and attach to a given dropdown selection,
+                  The SQL data to pull the options from as well as the values to associate with the options,
+                  The SQL Column Name to save the selected data to
+    visibility: Visibility attribute to assign to the column
+    InputType: A InputType Enum value to designate what kind of input to create on the HTML document if an input is needed
+    MinMaxStep: A Tuple consisting of:
+                A string representing the lower bound of the input type
+                A string representing the upper bound of the input type
+                A string representing the step of the input type i.e. 1 -> A numerical input should only ever contain values that are divisible by 1 (Integers)
+    requiredInput: Whether the input is required (Sets a required attribute onto the input field)
+    nestedOn: If the resulting table data should be grouped/nested on this column data
+    nestPriority: The order in which the table nesting occurs
+    makeTableHeader: Whether a table header should be made for the column. If false, an empty table header is made, otherwise a table header using the column's name is made.
+    urlData: A tuple consisting of:
+             A string representing the Flask View Function name to generate a URL for
+             A string representing a default row value to show for the link in case there is no value in the sql data already.
+             A string representing the columnName of the table from which a value should be retrieved for the row clicked from to be passed when the link is clicked
+    """
+    dropDownData: tuple[str, list, str] = None
+    visibility: str = VisibilityOptions.INITIAL.value
+    InputType: InputTypes = InputTypes.NOTINPUT.value
+    MinMaxStep: tuple[str, str, str] = None
     requiredInput: bool = False
     nestedOn: bool = False
     nestPriority: int = -1
+    makeTableHeader: bool = True
+    urlData: tuple[str, str, str] = None
+
+    def HasValidDropDownData(self):
+        if not self.dropDownData: return False
+
+        for item in self.dropDownData:
+            if not item:
+                return False
+        return True
+
+    def HasValidUrlData(self):
+        if not self.urlData: return False
+
+        for item in self.urlData:
+            if not item:
+                return False
+        return True
 
 class columnNamesAndAttributes(lowerCaseKeyDict):
     def __init__(self, *args):
@@ -48,8 +106,18 @@ class columnNamesAndAttributes(lowerCaseKeyDict):
         Then the columnNames are grouped by the priority value.
         :return: A list of tuples representing the grouped column names by priority, in order by priority and a plain list of all the columns with the nestedOn attribute = True
         """
-        result = sorted([(columnName, attributes.nestPriority) for columnName, attributes in self.lowercaseKeyDict.items() if attributes.nestedOn], key=lambda x: x[1], reverse=True)
+        result = sorted([(columnName, attributes.nestPriority) for columnName, attributes in self.items() if attributes.nestedOn], key=lambda x: x[1], reverse=True)
         return [tuple([column[0] for column in group]) for _, group in groupby(result, lambda x: x[1])], [columnNameAttr[0] for columnNameAttr in result]
+
+    def HasValidInputs(self):
+        for columnName, attributes in self.items():
+            if attributes.InputType == InputTypes.DROPDOWN.value and not attributes.HasValidDropDownData():
+                return False
+
+            if attributes.InputType not in InputTypes:
+                return False
+
+        return True
 
 class baseSQL:
     def __init__(self, databaseName=":memory:", rowFactory=sqlite3.Row):
@@ -68,7 +136,7 @@ class baseSQL:
         :return: The result of the execute statement which may be the result set for a SELECT query or nothing useful for other queries like INSERT
         """
         cursor = self.connection.cursor()
-        result = cursor.execute(SQLStatement, placeholderValues).fetchall() if not IsScript else cursor.executescript(SQLStatement)
+        result = cursor.execute(SQLStatement, placeholderValues).fetchall() if not IsScript else cursor.executescript(SQLStatement).fetchall()
         self.connection.commit()
         if returnColumnNames:
             columnNamesAndAttrs = columnNamesAndAttributes({colTuple[0]: columnWebAttributes() for colTuple in cursor.description})
@@ -106,5 +174,3 @@ class baseSQL:
     def lowercaseKeyDictFactory(cursor, row):
         fields = [column[0] for column in cursor.description]
         return lowerCaseKeyDict({key: value for key, value in zip(fields, row)})
-
-

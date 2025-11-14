@@ -1,22 +1,22 @@
-{% macro generateTableHeadersFromColumnList(columnList) %}
+{% macro generateTableHeadersFromColumnList(columnNamesAndAttrs) %}
     <tr>
-        {% for columnName in columnList %}
-            <th>{{g.textMap[columnName]}}</th>
+        {% for columnName, attributes in columnNamesAndAttrs.items() %}
+            <th> {% if attributes.makeTableHeader %} {{g.textMap[columnName]}} {% endif %} </th>
         {% endfor %}
     </tr>
 {% endmacro %}
 
-{% macro generateColumnGroupsForSqlColumns(tableColumns) %}
-    {% if tableColumns %}
+{% macro generateColumnGroupsForSqlColumns(tableColumnsAndAttrs) %}
+    {% if tableColumnsAndAttrs %}
         <colgroup>
-            {% for columnAttributes in tableColumns.values() %}
+            {% for columnAttributes in tableColumnsAndAttrs.values() %}
                 <col span="1" style={{"visibility:" ~ columnAttributes.visibility}}>
             {% endfor %}
         </colgroup>
     {% endif %}
 {% endmacro %}
 
-{% macro displayResults(sqlresults, urlFuncName='', rowLinkText='Placeholder', rowLinkKeyOrIdColumnName='') %}
+{% macro displayResults(sqlresults) %}
     {% set sqlResultData = sqlresults[0] %}
     {% if sqlResultData %}
         <table>
@@ -28,12 +28,22 @@
 
                     {% for row in sqlResultData %}
                         <tr>
-                            {% for colVal in row.values() %}
-                                <td>{{colVal}}</td>
+                            {% for columnName, colVal in row.items() %}
+                                {% set columnAttributes = tableColumns[columnName] %}
+                                <td>
+                                    {% if columnAttributes.HasValidUrlData() %}
+                                        <a href={{url_for(columnAttributes.urlData[0], keyorid=row[columnAttributes.urlData[2]])}}>
+                                            {% if not colVal %}
+                                                {{columnAttributes.urlData[1]}}
+                                            {% else %}
+                                                {{colVal}}
+                                            {% endif %}
+                                        </a>
+                                    {% else %}
+                                        {{colVal}}
+                                    {% endif %}
+                                </td>
                             {% endfor %}
-                            {% if urlFuncName and rowLinkKeyOrIdColumnName %}
-                                <td><a href={{url_for(urlFuncName,keyorid=row[rowLinkKeyOrIdColumnName])}}> {{rowLinkText}} </a></td>
-                            {% endif %}
                         </tr>
                     {% endfor %}
             {% else %}
@@ -72,25 +82,34 @@
 {% macro generateInputFields(formID, tableColumnsAndAttributes) %}
     {% if tableColumnsAndAttributes %}
         <form method="post" autocomplete="off" name="addrow">
-            {% for columnName, attributes in tableColumnsAndAttributes.items() %}
-                {% if attributes.canBeInput %}
-                    <label> {{ columnName }} </label>
-                    <br/>
-                    {% set dropDownData = attributes.dropDownData %}
-                    {% if dropDownData is not none %}
-                        <select id={{dropDownData[2]}} name={{dropDownData[2]}} {% if not dropDownData %} disabled {% endif %} {% if attributes.requiredInput %} required {% endif %}>
-                            {% for row in dropDownData[1] %}
-                                <option value={{row[dropDownData[0]]}}>{{row[columnName]}}</option>
-                            {% endfor %}
-                        </select>
-                    {% else %}
-                        <input type="text" id={{columnName}} name={{columnName}} {% if attributes.requiredInput %} required {% endif %} >
+            <fieldset {% if not tableColumnsAndAttributes.HasValidInputs() %} disabled {% endif %}>
+                <legend> Add New Entry </legend>
+                {% for columnName, attributes in tableColumnsAndAttributes.items() %}
+                    {% if attributes.InputType is not eq(g.InputTypes.NOTINPUT.value)%}
+                        <label> {{ g.textMap[columnName] }} </label>
+                        <br/>
+                        {% if attributes.InputType is eq(g.InputTypes.DROPDOWN.value) %}
+                            {% if attributes.HasValidDropDownData() %}
+                                {% set dropDownData = attributes.dropDownData %}
+                                <select id={{dropDownData[2]}} name={{dropDownData[2]}} {% if attributes.requiredInput %} required {% endif %}>
+                                    {% for row in dropDownData[1] %}
+                                        <option value={{row[dropDownData[0]]}}>{{row[columnName]}}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <p> Error: No Dropdown data found for dropdown input. </p>
+                            {% endif %}
+                        {% elif attributes.InputType is in g.InputTypes %}
+                            <input type={{attributes.InputType}} min={{attributes.MinMaxStep[0]}} max={{attributes.MinMaxStep[1]}} step={{attributes.MinMaxStep[2]}} id={{columnName}} name={{columnName}} {% if attributes.requiredInput %} required {% endif %} >
+                        {% else %}
+                            <p> No Valid Input Type. </p>
+                        {% endif %}
+                        <br/>
                     {% endif %}
-                    <br/>
-                {% endif %}
-            {% endfor %}
-            <input type="submit" value="submit">
-            <input type="hidden" id={{formID}} name="formid" value={{formID}}>
+                {% endfor %}
+                <input type="submit" value="submit">
+                <input type="hidden" id={{formID}} name="formid" value={{formID}}>
+            </fieldset>
         </form>
     {% endif %}
 {% endmacro %}
