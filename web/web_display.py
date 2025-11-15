@@ -3,7 +3,7 @@ from typing import Any
 from sql.carworkinvsql import carWorkInventorySQL
 from sql.sql_infrastructure import lowerCaseKeyDict, columnNamesAndAttributes, InputTypes
 from sql.SQL_Constants import MINIMUM_SQL_DATE, MAXIMUM_SQL_DATE, MIN_SQL_YEAR, MAX_SQL_YEAR
-from flask import Flask, render_template, request, g
+from flask import Flask, render_template, request, g, redirect, url_for
 from itertools import groupby
 from collections.abc import Iterable, Callable
 from mappings.textMap import getTextMapping
@@ -66,8 +66,7 @@ def getNewSubsetByColumnNames(columnsAndAttributes, columnNamesToFilterBy: Itera
 
     return columnNamesAndAttributes(resultDict)
 
-def generateCarsWithViewEditLinksTableData():
-    carsSqlResult = g.db.getCarsWithViewEditLinks()
+def setCarsInputAttributes(carsSqlResult):
     carsSqlResult[1]["make"].InputType = InputTypes.TEXT.value
     carsSqlResult[1]["make"].requiredInput = True
 
@@ -89,11 +88,16 @@ def generateCarsWithViewEditLinksTableData():
     carsSqlResult[1]["initialCost"].requiredInput = True
     carsSqlResult[1]["initialCost"].MinMaxStep = (None, None, "0.01")
 
+def generateCarsWithViewEditLinksTableData():
+    carsSqlResult = g.db.getCarsWithViewEditLinks()
+
+    setCarsInputAttributes(carsSqlResult)
+
     carsSqlResult[1]["viewLink"].makeTableHeader = False
     carsSqlResult[1]["viewLink"].urlData = ('car_page', 'View', 'carID')
 
     carsSqlResult[1]["editLink"].makeTableHeader = False
-    carsSqlResult[1]["editLink"].urlData = ('', 'Edit', 'carID') #TODO: Implement an edit page
+    carsSqlResult[1]["editLink"].urlData = ('car_edit_page', 'Edit', 'carID')
 
     return carsSqlResult
 
@@ -233,3 +237,35 @@ def car_page_post(keyorid):
                            carssqlres=sqlapp.getCarById(keyorid),
                            partssqlres=generatePartsForCarTableData(keyorid),
                            workeffortssqlres=generateWorkEffortsByCarWithEmployeesTableData(keyorid))
+
+@app.route('/car/edit/<int:keyorid>')
+@addGAttr("textMap", getTextMapping)
+@addGAttr("InputTypes", InputTypes.getInputTypes)
+def car_edit_page(keyorid):
+    # Opted for a separate web page as opposed to a modal from the main web page as this solution is easy to implement and will work for pretty much anyone
+    # Where as a modal would most likely need javascript and javascript could be disabled for various reasons thus requiring more handling being implemented
+    sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
+
+    carsSqlResult = sqlapp.getCarById(keyorid)
+    setCarsInputAttributes(carsSqlResult)
+
+    return render_template("car_view.html",
+                           carssqlres=carsSqlResult)
+
+@app.post('/car/edit/<int:keyorid>')
+@addGAttr("textMap", getTextMapping)
+@addGAttr("InputTypes", InputTypes.getInputTypes)
+def car_edit_page_post(keyorid):
+    sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
+
+    match request.form["formid"].lower():
+        case "edit_car":
+            req_form_dict = replace_dict_empty_string_vals_with_none(request.form)
+            addItemToDictionary(req_form_dict, 'carid', keyorid)
+            _ = sqlapp.executeAndCommitSQLStatement("UPDATE Cars SET make = :make, model = :model, year = :year, engineType = :enginetype, mileage = :mileage, initialCost = :initialcost WHERE carID = :carid", req_form_dict)
+        case _:
+            raise NotImplementedError
+
+    return redirect(url_for('main_page'))
+
+

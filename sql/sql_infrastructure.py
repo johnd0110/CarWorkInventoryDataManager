@@ -81,6 +81,12 @@ class columnWebAttributes:
     urlData: tuple[str, str, str] = None
 
     def HasValidDropDownData(self):
+        """
+        Determines if the current instance of ColumnWebAttributes has a valid dropdown data.
+        Valid drop down data is when we have some non-empty object for each element in the tuple.
+        :return: True if the dropdown data is valid, False otherwise.
+        """
+        # May want to check if the sql column names in the data are valid columns, but I do not yet the cleanest method to do so.
         if not self.dropDownData: return False
 
         for item in self.dropDownData:
@@ -133,7 +139,7 @@ class baseSQL:
         :param SQLStatement: A SQL statement to execute. If IsScript is True, then this is assumed to be a script.
         :param placeholderValues: Values for the placeholders in the statement. If IsScript is True, then this does nothing.
         :param returnColumnNames: Return column names from the query that was run, may be empty. If IsScript is True, the returned column names may not be usable info or empty.
-        :return: The result of the execute statement which may be the result set for a SELECT query or nothing useful for other queries like INSERT
+        :return: The result of the execute statement which may be the result set for a SELECT query or nothing useful for other queries like INSERT paired with the queries' column names along with a blank slate of web attributes
         """
         cursor = self.connection.cursor()
         result = cursor.execute(SQLStatement, placeholderValues).fetchall() if not IsScript else cursor.executescript(SQLStatement).fetchall()

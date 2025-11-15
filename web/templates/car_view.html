@@ -13,11 +13,18 @@
     <a href={{url_for('main_page')}}> Home </a>
     {% import 'modules/helper.html' as helper %}
     {{ helper.displayResults(carssqlres) }}
+    {% if request.path.startswith("/car/edit") %}
+        {{helper.generateInputFields('edit_car', carssqlres[1], legendText="Edit Entry")}}
+    {% endif %}
 
-    {{ helper.displayResults(partssqlres) }}
-    {{ helper.generateInputFields('parts', partssqlres[1]) }}
+    {% if partssqlres %}
+        {{ helper.displayResults(partssqlres) }}
+        {{ helper.generateInputFields('parts', partssqlres[1]) }}
+    {% endif %}
 
-    {{ helper.displayResults(workeffortssqlres) }}
-    {{ helper.generateInputFields('workefforts', workeffortssqlres[1]) }}
+    {% if workeffortssqlres %}
+        {{ helper.displayResults(workeffortssqlres) }}
+        {{ helper.generateInputFields('workefforts', workeffortssqlres[1]) }}
+    {% endif %}
 </body>
 </html>
