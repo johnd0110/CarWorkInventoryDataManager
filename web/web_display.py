@@ -89,7 +89,7 @@ def setCarsInputAttributes(carsSqlResult):
     carsSqlResult[1]["initialCost"].MinMaxStep = (None, None, "0.01")
 
 def generateCarsWithViewEditLinksTableData():
-    carsSqlResult = g.db.getCarsWithViewEditLinks()
+    carsSqlResult = g.db.getCarsWithViewEditLinksAndTotalValue()
 
     setCarsInputAttributes(carsSqlResult)
 

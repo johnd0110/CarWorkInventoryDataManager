@@ -13,3 +13,4 @@ workEffortDate, Work Effort Date;
 laborHours, Labor Hours;
 estimatedPay, Estimated Pay;
 workType, Work Type;
+totalEstimatedValue, Total Estimated Value;

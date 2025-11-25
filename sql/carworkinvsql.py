@@ -30,12 +30,22 @@ class carWorkInventorySQL(baseSQL):
         return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars", returnColumnNames=True)
 
     @autoSetHiddenColumnsByNames(["carID"])
-    def getCarsWithViewEditLinks(self) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost, 'View' as viewLink, 'Edit' as editLink FROM Cars", returnColumnNames=True)
+    def getCarsWithViewEditLinksAndTotalValue(self) -> tuple[list, columnNamesAndAttributes]:
+        return self.executeAndCommitSQLStatement("""SELECT c.carID, 
+                                                                        c.make, 
+                                                                        c.model, 
+                                                                        c.year, 
+                                                                        c.engineType, 
+                                                                        c.mileage, 
+                                                                        c.initialCost, 
+                                                                        (SELECT SUM(p.taxesPaid) + SUM(p.shippingCost) + SUM(p.price) FROM Parts p WHERE c.carID = p.InCarID) + (SELECT SUM(we.estimatedPay) FROM WorkEfforts we WHERE c.carID = we.carIDWorkedOn) + c.initialCost AS [totalEstimatedValue], 
+                                                                        'View' as viewLink, 
+                                                                        'Edit' as editLink 
+                                                                 FROM Cars c """, returnColumnNames=True)
 
     @autoSetHiddenColumnsByNames(["carID"])
     def getCarById(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars WHERE carID = ?", (carID,), returnColumnNames=True)
+        return self.executeAndCommitSQLStatement("SELECT c.carID, c.make, c.model, c.year, c.engineType, c.mileage, c.initialCost, (SELECT SUM(p.taxesPaid) + SUM(p.shippingCost) + SUM(p.price) FROM Parts p WHERE c.carID = p.InCarID) + (SELECT SUM(we.estimatedPay) FROM WorkEfforts we WHERE c.carID = we.carIDWorkedOn) + c.initialCost AS [totalEstimatedValue] FROM Cars c WHERE carID = ?", (carID,), returnColumnNames=True)
 
     @autoSetHiddenColumnsByNames(["partID", "InCarID"])
     def getParts(self) -> tuple[list, columnNamesAndAttributes]:

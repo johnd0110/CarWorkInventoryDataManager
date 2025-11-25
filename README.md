@@ -17,7 +17,9 @@ Features:
     - Link between Parts and Cars
     - Link between Cars and Labor
     - Link between Labor and Employee
-- Upcoming: Data Processing (i.e. Cost Aggregation)
+- Data Processing
+  - Project Context:
+    - Calculates total value of a car by totalling together the value of all labor and parts used for the car including the initial cost of the car
 - For Developers: 
   - Easy setup for new tables: 
     - Create a SQL table and query it
