@@ -26,7 +26,11 @@ CREATE TABLE Employees(employeeKey INTEGER PRIMARY KEY,
 CREATE TABLE WorkEfforts(workEffortID INTEGER PRIMARY KEY,
                          carIDWorkedOn INTEGER NOT NULL,
                          employeeWorkerKey INTEGER NOT NULL,
-                         workEffortDate DATETIME NOT NULL,
+                         -- Check constraint for dates like 2023-02-30 and malformed dates
+                         -- Since sqlite quietly handles near leap year cases like 2023-02-30 to be 2023-03-02
+                         -- Malformed dates become null so IS is needed to block null values from passing
+                         -- since NULL values are not constraint violations by default in Sqlite
+                         workEffortDate DATE NOT NULL CHECK (date(workEffortDate) IS workEffortDate),
                          laborHours NUMERIC NOT NULL,
                          estimatedPay NUMERIC NOT NULL,
                          workType TEXT NOT NULL,

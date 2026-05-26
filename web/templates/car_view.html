@@ -10,7 +10,7 @@
     <title>Car</title>
 </head>
 <body>
-    <a href={{url_for('main_page')}}> Home </a>
+    <a href={{url_for('web_home.main_page')}}> Home </a>
     {% import 'modules/helper.html' as helper %}
     {{ helper.displayResults(carssqlres) }}
     {% if request.path.startswith("/car/edit") %}

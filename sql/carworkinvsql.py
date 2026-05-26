@@ -1,10 +1,12 @@
 from collections.abc import Iterable
-from typing import Protocol
-from sql.sql_infrastructure import baseSQL, columnNamesAndAttributes, VisibilityOptions
+from typing import Protocol, Any
 from flask import g
 
+from .sql_infrastructure import baseSQL
+from web.helper import columnNamesAndAttributes, VisibilityOptions
+
 SCHEMA_FILE_PATH = "..\\sql\\schema\\schema.sql"
-TEST_DATA_FILE_PATH = "..\\sql\\test\\test_data.sql"
+TEST_DATA_FILE_PATH = "..\\sql\\test_data\\manual_testing_data.sql"
 DATABASE_FILE_PATH = "sql\\databases\\CWI_Database.db"
 
 class queryCaller(Protocol):
@@ -25,60 +27,103 @@ class carWorkInventorySQL(baseSQL):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @autoSetHiddenColumnsByNames(["carID"])
-    def getCars(self) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars", returnColumnNames=True)
+    def CWI_executeAndCommitSQLStatement(self, SQLStatement: str, placeholderValues: tuple | dict = (), returnColumnNames: bool = True) -> tuple[list, columnNamesAndAttributes | None]:
+        """
+        Custom call to executeAndCommitSQLStatement that provides the ColumnNamesAndAttributes class type
+        so that the column names provided back have the extra configurable attributes for the HTML table display attached
+        :param SQLStatement: SQL query statement to execute as a string
+        :param placeholderValues: SQL Placeholder values as a tuple or dictionary
+        :return: A tuple of the SQL query results and the column names with the configurable attributes as an columnNamesAndAttributes object
+        """
+        return self.executeAndCommitSQLStatement(SQLStatement, placeholderValues, columnNamesClassWrapper=columnNamesAndAttributes if returnColumnNames else None)
 
     @autoSetHiddenColumnsByNames(["carID"])
-    def getCarsWithViewEditLinksAndTotalValue(self) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("""SELECT c.carID, 
-                                                                        c.make, 
-                                                                        c.model, 
-                                                                        c.year, 
-                                                                        c.engineType, 
-                                                                        c.mileage, 
-                                                                        c.initialCost, 
-                                                                        (SELECT SUM(p.taxesPaid) + SUM(p.shippingCost) + SUM(p.price) FROM Parts p WHERE c.carID = p.InCarID) + (SELECT SUM(we.estimatedPay) FROM WorkEfforts we WHERE c.carID = we.carIDWorkedOn) + c.initialCost AS [totalEstimatedValue], 
-                                                                        'View' as viewLink, 
-                                                                        'Edit' as editLink 
-                                                                 FROM Cars c """, returnColumnNames=True)
+    def getCars(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("SELECT carID, make, model, year, engineType, mileage, initialCost FROM Cars")
 
     @autoSetHiddenColumnsByNames(["carID"])
-    def getCarById(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT c.carID, c.make, c.model, c.year, c.engineType, c.mileage, c.initialCost, (SELECT SUM(p.taxesPaid) + SUM(p.shippingCost) + SUM(p.price) FROM Parts p WHERE c.carID = p.InCarID) + (SELECT SUM(we.estimatedPay) FROM WorkEfforts we WHERE c.carID = we.carIDWorkedOn) + c.initialCost AS [totalEstimatedValue] FROM Cars c WHERE carID = ?", (carID,), returnColumnNames=True)
+    def getCarsWithViewEditLinksAndTotalValue(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("""SELECT c.carID, 
+                                                               c.make, 
+                                                               c.model, 
+                                                               c.year, 
+                                                               c.engineType, 
+                                                               c.mileage, 
+                                                               c.initialCost, 
+                                                               (SELECT TOTAL(p.taxesPaid) + TOTAL(p.shippingCost) + TOTAL(p.price) FROM Parts p WHERE c.carID = p.InCarID) + (SELECT TOTAL(we.estimatedPay) FROM WorkEfforts we WHERE c.carID = we.carIDWorkedOn) + c.initialCost AS [totalEstimatedValue], 
+                                                               'View' as viewLink, 
+                                                               'Edit' as editLink 
+                                                               FROM Cars c """)
+
+    @autoSetHiddenColumnsByNames(["carID"])
+    def getCarById(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("""SELECT c.carID, 
+                                                                            c.make, 
+                                                                            c.model, 
+                                                                            c.year, 
+                                                                            c.engineType, 
+                                                                            c.mileage, 
+                                                                            c.initialCost, 
+                                                                            (SELECT TOTAL(p.taxesPaid) + TOTAL(p.shippingCost) + TOTAL(p.price) FROM Parts p WHERE c.carID = p.InCarID) 
+                                                                            + (SELECT TOTAL(we.estimatedPay) FROM WorkEfforts we WHERE c.carID = we.carIDWorkedOn) 
+                                                                            + c.initialCost AS [totalEstimatedValue] 
+                                                                            FROM Cars c 
+                                                                            WHERE carID = ?""",
+                                                     (carID,))
 
     @autoSetHiddenColumnsByNames(["partID", "InCarID"])
-    def getParts(self) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT partID, InCarID, partName, taxesPaid, shippingCost, price FROM Parts", returnColumnNames=True)
+    def getParts(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("SELECT partID, InCarID, partName, taxesPaid, shippingCost, price FROM Parts")
 
     @autoSetHiddenColumnsByNames(["partID", "InCarID"])
-    def getPartsForCar(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT partID, InCarID, partName, taxesPaid, shippingCost, price FROM Parts WHERE InCarID = ?", placeholderValues=(carID,), returnColumnNames=True)
+    def getPartsForCar(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("SELECT partID, InCarID, partName, taxesPaid, shippingCost, price FROM Parts WHERE InCarID = ?", placeholderValues=(carID,))
 
     @autoSetHiddenColumnsByNames(["employeeKey"])
-    def getEmployees(self) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT employeeKey, employeeName FROM Employees", returnColumnNames=True)
+    def getEmployees(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("SELECT employeeKey, employeeName FROM Employees")
 
     @autoSetHiddenColumnsByNames(["workEffortID", "carIDWorkedOn", "employeeWorkerKey"])
-    def getWorkEfforts(self) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("SELECT workEffortID, carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType FROM WorkEfforts", returnColumnNames=True)
+    def getWorkEfforts(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("SELECT workEffortID, carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType FROM WorkEfforts")
 
     @autoSetHiddenColumnsByNames(["workEffortID", "carIDWorkedOn", "employeeWorkerKey"])
-    def getWorkEffortByCar(self, carID: int) -> tuple[list, columnNamesAndAttributes]:
-        return self.executeAndCommitSQLStatement("""SELECT workEffortID, carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType 
-                                                 FROM WorkEfforts 
-                                                 WHERE CarIDWorkedOn = ?""", placeholderValues=(carID,), returnColumnNames=True)
+    def getWorkEffortByCar(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("""SELECT workEffortID, carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType 
+                                                                     FROM WorkEfforts 
+                                                                     WHERE CarIDWorkedOn = ?""", placeholderValues=(carID,))
 
     @autoSetHiddenColumnsByNames(["workEffortID", "carIDWorkedOn", "employeeWorkerKey"])
-    def getWorkEffortByCarWithEmployees(self, carID: int):
-        return self.executeAndCommitSQLStatement("""SELECT we.workEffortID, we.carIDWorkedOn, we.employeeWorkerKey, 
-                                                 emp.EmployeeName, workEffortDate, laborHours, estimatedPay, workType 
-                                                 FROM WorkEfforts we 
-                                                 JOIN Employees emp 
-                                                 ON we.employeeWorkerKey = emp.employeeKey 
-                                                 WHERE we.CarIDWorkedOn = ?""",
-                                                 placeholderValues=(carID,),
-                                                 returnColumnNames=True)
+    def getWorkEffortByCarWithEmployees(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeAndCommitSQLStatement("""SELECT we.workEffortID, we.carIDWorkedOn, we.employeeWorkerKey, 
+                                                                     emp.EmployeeName, workEffortDate, laborHours, estimatedPay, workType 
+                                                                     FROM WorkEfforts we 
+                                                                     JOIN Employees emp 
+                                                                     ON we.employeeWorkerKey = emp.employeeKey 
+                                                                     WHERE we.CarIDWorkedOn = ?""",
+                                                                  placeholderValues=(carID,))
+
+    def insertCar(self, carDataValues: dict[str, Any]):
+        return self.CWI_executeAndCommitSQLStatement("""INSERT INTO Cars(make, model, year, engineType, mileage, initialcost) 
+                                                             VALUES (:make, :model, :year, :enginetype, :mileage, :initialcost)""",
+                                                     carDataValues,
+                                                     False)
+
+    def insertEmployee(self, employeeDataValues: dict[str, Any]):
+        return self.CWI_executeAndCommitSQLStatement("INSERT INTO Employees(employeeName) VALUES (:employeename)",
+                                                     employeeDataValues,
+                                                     False)
+
+    def insertPart(self, partDataValues: dict[str, Any]):
+        return self.CWI_executeAndCommitSQLStatement("INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price) VALUES (:incarid, :partname, :taxespaid, :shippingcost, :price)",
+                                                     partDataValues,
+                                                     False)
+
+    def insertWorkEffort(self, workEffortDataValues: dict[str, Any]):
+        return self.CWI_executeAndCommitSQLStatement("INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType) VALUES (:caridworkedon, :employeeworkerkey, :workeffortdate, :laborhours, :estimatedpay, :worktype)",
+                                                     workEffortDataValues,
+                                                     False)
+
     @staticmethod
     def CWI_SQL_flask_factory():
         """
@@ -86,7 +131,7 @@ class carWorkInventorySQL(baseSQL):
         :return: The instance of the car work inventory SQL database manager that's been stored in g.db
         """
         if 'db' not in g:
-            g.db = carWorkInventorySQL(databaseName=DATABASE_FILE_PATH, rowFactory=carWorkInventorySQL.lowercaseKeyDictFactory)
+            g.db = carWorkInventorySQL(databaseName=DATABASE_FILE_PATH, rowFactory=carWorkInventorySQL.lowercaseKeyDictSqlResultFactory)
         return g.db
 
     @staticmethod
@@ -111,10 +156,10 @@ class carWorkInventorySQL(baseSQL):
         with app.app_context():
             db = carWorkInventorySQL.CWI_SQL_flask_factory()
             with app.open_resource(SCHEMA_FILE_PATH) as f:
-                db.executeAndCommitSQLStatement(f.read().decode('utf-8'), IsScript=True)
+                db.executeAndCommitSQLStatement(f.read().decode('utf-8'), columnNamesClassWrapper=None, IsScript=True)
 
             if use_test_data:
                 with app.open_resource(TEST_DATA_FILE_PATH) as f:
-                    db.executeAndCommitSQLStatement(f.read().decode('utf-8'), IsScript=True)
+                    db.executeAndCommitSQLStatement(f.read().decode('utf-8'), columnNamesClassWrapper=None, IsScript=True)
 
             db.connection.commit()

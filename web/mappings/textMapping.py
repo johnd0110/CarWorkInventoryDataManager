@@ -1,5 +1,5 @@
 from flask import current_app
-from sql.sql_infrastructure import lowerCaseKeyDict
+from common_helper import lowerCaseKeyDict
 
 TEXT_MAP_FILE_NAME = "mappings/textMapping.txt"
 
