@@ -1,42 +1,79 @@
+DELETE FROM PurchasesHistory;
+DELETE FROM WorkEfforts;
+DELETE FROM Items;
+DELETE FROM ItemGroupTransactions;
+DELETE FROM Cars;
+DELETE FROM Employees;
+DELETE FROM ValueEstimates;
+DELETE FROM Purchases;
+
+-- Car Purchase Table Data
+INSERT INTO Purchases(purchaseKey, cost)
+VALUES (1, 1234.99), (2, 5000), (3, 20000), (4, 0);
+
+-- Car Value Estimate Table Data
+INSERT INTO ValueEstimates(valueEstimateKey, estimatedValue)
+VALUES (1, 50000), (2, 3000);
+
 -- Cars Table Test Data
-INSERT INTO Cars(make, model, "year", engineType, mileage, initialCost)
+INSERT INTO Cars(purchaseKey, valueEstimateKey, make, model, "year", engineType, mileage, additionalNotes)
 VALUES
-("toyota", "corolla", 2012, "test", 50000, 1234.99),
-("mitsubishi", "kodomo", 1999, "testtest", 1000, 5000),
-("chevy", "corvette", 1969, "V8", 100000, 20000),
-("ford", "ranger", 2012, "v9", 0, 0);
+(1, NULL, "toyota", "corolla", 2012, "test", 50000, "test"),
+(2, NULL, "mitsubishi", "kodomo", 1999, "testtest", 1000, "test"),
+(3, 1, "chevy", "corvette", 1969, "V8", 100000, "test"),
+(4, 2, "ford", "ranger", 2012, "v9", 0, "test");
 
--- Parts Table Test Data
+-- Items Purchases Table Test Data
+INSERT INTO Purchases(purchaseKey, taxesPaid, shippingCost, cost, refundAmount)
+VALUES (5, 100, 100, 1000, 0),
+       (6, 10, 5, 75, 10),
+       (7, 5, 10, 50, 0),
+       (8, 25, 50, 200, 0),
+       (9, 15, 15, 150, 0),
+       (10, 200, 123, 2543, 0),
+       (11, 110, 89, 198, 0),
+       (12, 28.37, 13.99, 86.55, 0),
+       (13, 8.88, 1.23, 46.41, 0),
+       (14, 2.74, 3.09, 32.11, 0),
+       (15, 1, 1, 1, 0),
+       (16, 1, 2, 3, 10),
+       (17, 123, 12, 1, 136);
 
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (1, "engine", 100, 100, 1000);
+INSERT INTO ValueEstimates(valueEstimateKey, estimatedValue)
+VALUES (3, 1000),
+       (4, 123),
+       (5, 6),
+       (6, 500),
+       (7, 100);
 
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (1, "alternator", 10, 5, 75);
+-- Item Group Transactions Table Test Data
+INSERT INTO ItemGroupTransactions(itemGroupTransactionKey, description)
+VALUES (1, ''),
+       (2, ''),
+       (3, ''),
+       (4, ''),
+       (5, ''),
+       (6, ''),
+       (7, ''),
+       (8, ''),
+       (9, ''),
+       (10, '');
 
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (1, "spark plug", 5, 10, 50);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (1, "tire", 25, 50, 200);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (1, "stereo", 15, 15, 150);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (2, "engine", 200, 123, 2543);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (3, "hub cap", 110, 89, 198);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (3, "front lights", 28.37, 13.99, 86.55);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (3, "brake pad", 8.88, 1.23, 46.41);
-
-INSERT INTO Parts(InCarID, partName, taxesPaid, shippingCost, price)
-VALUES (3, "axle", 2.74, 3.09, 32.11);
+-- Items Table Test Data
+INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
+VALUES (1, 1, 3, 5, 'store', "engine", ''),
+(1, 1, NULL, 6, 'store', "alternator", ''),
+(1, 1, NULL, 7, 'store', "spark plug", ''),
+(1, 2, 4, 8, 'store', "tire", ''),
+(1, 3, 5, 9, 'store', "stereo", ''),
+(2, 4, 6, 10, 'store', "engine", ''),
+(3, 5, 7, 11, 'store', "hub cap", ''),
+(3, 5, NULL, 12, 'store', "front lights", ''),
+(3, 6, NULL, 13, 'store', "brake pad", ''),
+(3, 7, NULL, 14, 'store', "axle", ''),
+(4, 8, NULL, 15, 'store', 'front bumper', ''),
+(4, 9, NULL, 16, 'store', 'back bumper', ''),
+(4, 10, NULL, 17, 'store', 'key replacement', '');
 
 -- Employees Table Test Data
 INSERT INTO Employees(employeeName) VALUES
@@ -48,33 +85,50 @@ INSERT INTO Employees(employeeName) VALUES
 ("john");
 
 -- WorkEfforts Table Test Data
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2021-09-12'), 10, 500, 'engine work');
-
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2022-10-07'), 10, 500, 'engine work');
-
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2021-09-14'), 10, 500, 'engine work');
-
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2023-05-12'), 10, 500, 'engine work');
-
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2023-12-31'), 10, 500, 'engine work');
-
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2021-01-01'), 10, 500, 'engine work');
-
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2022-04-13'), 10, 500, 'engine work');
+INSERT INTO WorkEfforts(carKeyWorkedOn, employeeKey, workEffortDate, laborHours, estimatedPay, workType)
+VALUES (1, 1, date('2021-09-12'), 10, 500, 'engine work'),
+(1, 1, date('2022-10-07'), 10, 500, 'engine work'),
+(1, 1, date('2021-09-14'), 10, 500, 'engine work'),
+(1, 1, date('2023-05-12'), 10, 500, 'engine work'),
+(1, 1, date('2023-12-31'), 10, 500, 'engine work'),
+(1, 1, date('2021-01-01'), 10, 500, 'engine work'),
+(1, 1, date('2022-04-13'), 10, 500, 'engine work');
 
 -- Leap Year test
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2024-02-29'), 10, 500, 'engine work');
+INSERT INTO WorkEfforts(carKeyWorkedOn, employeeKey, workEffortDate, laborHours, estimatedPay, workType)
+VALUES (1, 1, date('2024-02-29'), 10, 500, 'engine work'),
+(1, 1, date('2024-02-01'), 10, 500, 'engine work'),
+(1, 1, date('2022-07-31'), 10, 500, 'engine work');
 
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2024-02-01'), 10, 500, 'engine work');
+-- Purchase History Test Data
+UPDATE Purchases
+SET cost = 12,
+taxesPaid = 23,
+shippingCost = 34,
+refundAmount = 45
+WHERE purchaseKey IN (1, 7, 8);
 
-INSERT INTO WorkEfforts(carIDWorkedOn, employeeWorkerKey, workEffortDate, laborHours, estimatedPay, workType)
-VALUES (1, 1, date('2022-07-31'), 10, 500, 'engine work');
+UPDATE Purchases
+SET cost = 0,
+taxesPaid = 0,
+shippingCost = 0,
+refundAmount = 0
+WHERE purchaseKey IN (1);
+
+SELECT sleep(1);
+
+UPDATE Purchases
+SET cost = -100,
+taxesPaid = 0,
+shippingCost = 0,
+refundAmount = 0
+WHERE purchaseKey IN (1);
+
+SELECT sleep(5);
+
+UPDATE Purchases
+SET cost = 1,
+taxesPaid = 1,
+shippingCost = 1,
+refundAmount = 10
+WHERE purchaseKey IN (1);

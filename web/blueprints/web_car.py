@@ -1,9 +1,9 @@
 # External Libraries or built-in Python libraries
-from flask import Blueprint, render_template, redirect, url_for, g, request
+from flask import Blueprint, render_template, redirect, url_for, request
 
 # Modules / packages in this project
-from helper import (addGAttr, replace_dict_empty_string_vals_with_none, addItemToDictionary,
-                    setCarsTableAndInputConfig, setCarPartsTableAndInputConfig, setWorkEffortsByCarWithEmployeesTableAndInputConfig,
+from helper import (addGAttr,
+                    setCarsTableAndInputConfig, setItemsTableAndInputConfig, setWorkEffortsByCarWithEmployeesTableAndInputConfig,
                     InputTypes)
 from mappings import getTextMapping
 from sql import carWorkInventorySQL
@@ -15,10 +15,11 @@ web_car = Blueprint('web_car', __name__, url_prefix='/car')
 @addGAttr("textMap", getTextMapping)
 @addGAttr("InputTypes", InputTypes.getInputTypes)
 def car_page(keyorid):
+    #TODO: Set up item group transaction tables and fields
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
 
-    partssqlresult = sqlapp.getPartsForCar(keyorid)
-    setCarPartsTableAndInputConfig(partssqlresult[1])
+    partssqlresult = sqlapp.getItemsForCar(keyorid)
+    setItemsTableAndInputConfig(partssqlresult[1])
 
     workeffortssqlresults = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
     setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
@@ -36,22 +37,18 @@ def car_page_post(keyorid):
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
 
     match request.form["formid"].lower():
-        case "cars":
-            raise NotImplementedError
         case "parts":
-            req_form_dict = replace_dict_empty_string_vals_with_none(request.form)
-            addItemToDictionary(req_form_dict, 'incarid', keyorid)
-            _ = sqlapp.insertPart(lowerCaseKeyDict(req_form_dict).lowercaseKeyDict)
-        case "employees":
-            raise NotImplementedError
+            req_form_dict = lowerCaseKeyDict(request.form)
+            req_form_dict['incarkey'] = keyorid
+            _ = sqlapp.insertItem(req_form_dict)
         case "workefforts":
-            req_form_dict = replace_dict_empty_string_vals_with_none(request.form)
-            addItemToDictionary(req_form_dict, 'carIDWorkedOn', keyorid)
-            _ = sqlapp.insertWorkEffort(lowerCaseKeyDict(req_form_dict).lowercaseKeyDict)
+            req_form_dict = lowerCaseKeyDict(request.form)
+            req_form_dict['carKeyWorkedOn'] = keyorid
+            _ = sqlapp.insertWorkEffort(req_form_dict)
         case _:
             raise NotImplementedError
-    partssqlresult = sqlapp.getPartsForCar(keyorid)
-    setCarPartsTableAndInputConfig(partssqlresult[1])
+    partssqlresult = sqlapp.getItemsForCar(keyorid)
+    setItemsTableAndInputConfig(partssqlresult[1])
 
     workeffortssqlresults = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
     setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
@@ -82,12 +79,12 @@ def car_edit_page(keyorid):
 def car_edit_page_post(keyorid):
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
 
+    req_form_dict = lowerCaseKeyDict(request.form)
     match request.form["formid"].lower():
         case "edit_car":
-            req_form_dict = replace_dict_empty_string_vals_with_none(request.form)
-            addItemToDictionary(req_form_dict, 'carid', keyorid)
-            _ = sqlapp.executeAndCommitSQLStatement("UPDATE Cars SET make = :make, model = :model, year = :year, engineType = :enginetype, mileage = :mileage, initialCost = :initialcost WHERE carID = :carid", req_form_dict)
+            req_form_dict['carkey'] = keyorid
+            _ = sqlapp.updateCarPurchaseAndValueEstimate(req_form_dict)
         case _:
             raise NotImplementedError
 
-    return redirect(url_for('main_page'))
+    return redirect(url_for('web_home.main_page'))

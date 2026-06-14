@@ -107,7 +107,7 @@
                         {% if attributes.InputType is eq(g.InputTypes.DROPDOWN.value) %}
                             {% if attributes.HasValidDropDownData() %}
                                 {% set dropDownData = attributes.dropDownData %}
-                                <select id={{dropDownData[2]}} name={{dropDownData[2]}} {{required if attributes.requiredInput}}>
+                                <select id={{dropDownData[2]}} name={{dropDownData[2]}} {{"required" if attributes.requiredInput}}>
                                     {% for row in dropDownData[1] %}
                                         <option value={{row[dropDownData[0]]}}>{{row[columnName]}}</option>
                                     {% endfor %}
@@ -115,8 +115,10 @@
                             {% else %}
                                 <p> Error: No Dropdown data found for dropdown input. </p>
                             {% endif %}
+                        {% elif attributes.InputType is eq(g.InputTypes.TEXTAREA.value) %}
+                            <textarea id={{columnName}} name={{attributes.InputAlias if attributes.InputAlias else columnName}} spellcheck="true" autocomplete="on" wrap={{attributes.wrap}} ></textarea>
                         {% elif attributes.InputType is in g.InputTypes %}
-                            <input type={{attributes.InputType}} min={{attributes.MinMaxStep[0]}} max={{attributes.MinMaxStep[1]}} step={{attributes.MinMaxStep[2]}} id={{columnName}} name={{columnName}} {{required if attributes.requiredInput}} >
+                            <input type={{attributes.InputType}} spellcheck="true" autocomplete="on" min={{attributes.MinMaxStep[0]}} max={{attributes.MinMaxStep[1]}} step={{attributes.MinMaxStep[2]}} id={{columnName}} name={{attributes.InputAlias if attributes.InputAlias else columnName}} {{"required" if attributes.requiredInput}} >
                         {% else %}
                             <p> No Valid Input Type. </p>
                         {% endif %}
