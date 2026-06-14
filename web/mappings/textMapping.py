@@ -6,8 +6,8 @@ TEXT_MAP_FILE_NAME = "mappings/textMapping.txt"
 def getTextMapping():
     mapDict = lowerCaseKeyDict()
     with current_app.app_context():
-        with current_app.open_resource(TEXT_MAP_FILE_NAME) as f:
-            for line in f.read().decode('utf-8').split(';'):
+        with current_app.open_resource(TEXT_MAP_FILE_NAME, mode='rt', encoding='utf-8') as f:
+            for line in f.read().split(';'):
                 if line:
                     strippedLine = line.strip('\r').strip('\n')
                     lineMap = strippedLine.split(',')

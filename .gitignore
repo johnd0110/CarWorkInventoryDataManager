@@ -2,3 +2,5 @@
 Design/
 .venv/
 .idea/
+/sql/conversion/*
+!/sql/conversion/conversion_helper.py

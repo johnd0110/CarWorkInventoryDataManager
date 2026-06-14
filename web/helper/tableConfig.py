@@ -9,6 +9,7 @@ from common_helper import lowerCaseKeyDict
 class InputTypes(StrEnum):
     NOTINPUT = ""
     TEXT = "text"
+    TEXTAREA = "textarea"
     DATE = "date"
     NUMBER = "number"
     DROPDOWN = "dropdown"
@@ -22,6 +23,12 @@ class VisibilityOptions(StrEnum):
     INITIAL = "initial"
     COLLAPSE = "collapse"
 
+@unique
+class WrapOptions(StrEnum):
+    SOFT = "soft"
+    HARD = "hard"
+    OFF = "off"
+
 @dataclass
 class columnWebAttributes:
     """
@@ -32,6 +39,7 @@ class columnWebAttributes:
                   The SQL Column Name to save the selected data to
     visibility: Visibility attribute to assign to the column
     InputType: A InputType Enum value to designate what kind of input to create on the HTML document if an input is needed
+    InputAlias: An alias for the input form field name i.e. description -> itemGroupDescription, if None or empty string -> use column name
     MinMaxStep: A Tuple consisting of:
                 A string representing the lower bound of the input type
                 A string representing the upper bound of the input type
@@ -44,16 +52,19 @@ class columnWebAttributes:
              A string representing the Flask View Function name to generate a URL for
              A string representing a default row value to show for the link in case there is no value in the sql data already.
              A string representing the columnName of the table from which a value should be retrieved for the row clicked from to be passed when the link is clicked
+    wrap: WrapOptions value to set in a textarea element's wrap attribute. Defaults to soft. Only has an effect on textarea form inputs.
     """
     dropDownData: tuple[str, list, str] = None
     visibility: str = VisibilityOptions.INITIAL.value
     InputType: InputTypes = InputTypes.NOTINPUT.value
+    InputAlias: str = None
     MinMaxStep: tuple[str, str, str] = None
     requiredInput: bool = False
     nestedOn: bool = False
     nestPriority: int = -1
     makeTableHeader: bool = True
     urlData: tuple[str, str, str] = None
+    wrap: WrapOptions = "soft"
 
     def HasValidDropDownData(self):
         """
@@ -103,7 +114,7 @@ class columnNamesAndAttributes(columnNames, lowerCaseKeyDict):
         return True
 
     @classmethod
-    def from_columnnamesattributes_dict(cls, cna_dict: [str, columnWebAttributes]):
+    def from_columnnamesattributes_dict(cls, cna_dict: dict[str, columnWebAttributes]):
         intermediateobj = cls(list(cna_dict))
         for columnName, attributes in cna_dict.items():
             intermediateobj[columnName] = attributes
@@ -127,48 +138,66 @@ def setCarsTableAndInputConfig(carsSqlResult):
     carsSqlResult["mileage"].requiredInput = True
     carsSqlResult["mileage"].MinMaxStep = ("0", None, None)
 
-    carsSqlResult["initialCost"].InputType = InputTypes.NUMBER.value
-    carsSqlResult["initialCost"].requiredInput = True
-    carsSqlResult["initialCost"].MinMaxStep = (None, None, "0.01")
+    carsSqlResult["additionalNotes"].InputType = InputTypes.TEXTAREA.value
+
+    setPurchasesTableAndInputConfig(carsSqlResult)
+
+    setValueEstimatesTableAndInputConfig(carsSqlResult)
 
 def setCarsWithViewEditLinksTableAndInputConfig(carsSqlResult):
     setCarsTableAndInputConfig(carsSqlResult)
 
     carsSqlResult["viewLink"].makeTableHeader = False
-    carsSqlResult["viewLink"].urlData = ('web_car.car_page', 'View', 'carID')
+    carsSqlResult["viewLink"].urlData = ('web_car.car_page', 'View', 'carKey')
 
     carsSqlResult["editLink"].makeTableHeader = False
-    carsSqlResult["editLink"].urlData = ('web_car.car_edit_page', 'Edit', 'carID')
+    carsSqlResult["editLink"].urlData = ('web_car.car_edit_page', 'Edit', 'carKey')
 
 def setEmployeesTableConfig(employeesSqlResult):
 
     employeesSqlResult["employeeName"].InputType = InputTypes.TEXT.value
     employeesSqlResult["employeeName"].requiredInput = True
 
-def setCarPartsTableAndInputConfig(partssqlCNA):
+def setItemsTableAndInputConfig(itemssqlCNA):
+    itemssqlCNA["itemName"].InputType = InputTypes.TEXT.value
+    itemssqlCNA["itemName"].requiredInput = True
 
-    partssqlCNA["partName"].InputType = InputTypes.TEXT.value
-    partssqlCNA["partName"].requiredInput = True
+    itemssqlCNA["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
-    partssqlCNA["taxesPaid"].InputType = InputTypes.NUMBER.value
-    partssqlCNA["taxesPaid"].requiredInput = True
-    partssqlCNA["taxesPaid"].MinMaxStep = ("0", None, "0.01")
+    #TODO: Configure item group description fields
+    setPurchasesTableAndInputConfig(itemssqlCNA)
 
-    partssqlCNA["shippingCost"].InputType = InputTypes.NUMBER.value
-    partssqlCNA["shippingCost"].requiredInput = True
-    partssqlCNA["shippingCost"].MinMaxStep = ("0", None, "0.01")
+    setValueEstimatesTableAndInputConfig(itemssqlCNA)
 
-    partssqlCNA["price"].InputType = InputTypes.NUMBER.value
-    partssqlCNA["price"].requiredInput = True
-    partssqlCNA["price"].MinMaxStep = (None, None, "0.01")
+def setValueEstimatesTableAndInputConfig(sqlCNA):
+    sqlCNA["estimatedValue"].InputType = InputTypes.NUMBER.value
+    sqlCNA["estimatedValue"].requiredInput = False
+    sqlCNA["estimatedValue"].MinMaxStep = ("0", None, "0.01")
+
+def setPurchasesTableAndInputConfig(sqlCNA):
+    sqlCNA["taxesPaid"].InputType = InputTypes.NUMBER.value
+    sqlCNA["taxesPaid"].requiredInput = True
+    sqlCNA["taxesPaid"].MinMaxStep = ("0", None, "0.01")
+
+    sqlCNA["shippingCost"].InputType = InputTypes.NUMBER.value
+    sqlCNA["shippingCost"].requiredInput = True
+    sqlCNA["shippingCost"].MinMaxStep = ("0", None, "0.01")
+
+    sqlCNA["cost"].InputType = InputTypes.NUMBER.value
+    sqlCNA["cost"].requiredInput = True
+    sqlCNA["cost"].MinMaxStep = (None, None, "0.01")
+
+    sqlCNA["refundAmount"].InputType = InputTypes.NUMBER.value
+    sqlCNA["refundAmount"].requiredInput = True
+    sqlCNA["refundAmount"].MinMaxStep = ("0", None, "0.01")
 
 def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, employeessqldata):
-    workeffortssqlCNA["employeeWorkerKey"].nestedOn = True
-    workeffortssqlCNA["employeeWorkerKey"].nestPriority = 100
+    workeffortssqlCNA["employeeKey"].nestedOn = True
+    workeffortssqlCNA["employeeKey"].nestPriority = 100
 
     workeffortssqlCNA["employeeName"].InputType = InputTypes.DROPDOWN.value
     workeffortssqlCNA["employeeName"].requiredInput = True
-    workeffortssqlCNA["employeeName"].dropDownData = ("employeeKey", employeessqldata, "employeeWorkerKey")
+    workeffortssqlCNA["employeeName"].dropDownData = ("employeeKey", employeessqldata, "employeeKey")
     workeffortssqlCNA["employeeName"].nestedOn = True
     workeffortssqlCNA["employeeName"].nestPriority = 100
 

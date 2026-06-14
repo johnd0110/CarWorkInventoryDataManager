@@ -3,7 +3,7 @@ from flask import Blueprint, request, render_template, g
 
 # Modules / packages in this project
 from sql import carWorkInventorySQL
-from helper import (addGAttr, replace_dict_empty_string_vals_with_none,
+from helper import (addGAttr,
                     setCarsWithViewEditLinksTableAndInputConfig, setEmployeesTableConfig,
                     InputTypes)
 from mappings import getTextMapping
@@ -16,6 +16,7 @@ web_home = Blueprint("web_home", __name__)
 @addGAttr("InputTypes", InputTypes.getInputTypes)
 def main_page():
     _ = carWorkInventorySQL.CWI_SQL_flask_factory()
+
     carssqlresult = g.db.getCarsWithViewEditLinksAndTotalValue()
     setCarsWithViewEditLinksTableAndInputConfig(carssqlresult[1])
 
@@ -31,14 +32,14 @@ def main_page():
 @addGAttr("InputTypes", InputTypes.getInputTypes)
 def main_page_post():
     sqlapp = carWorkInventorySQL.CWI_SQL_flask_factory()
-    #TODO: Handle when invalid values are provided to the INSERT
+    req_form_dict = lowerCaseKeyDict(request.form)
     match request.form["formid"].lower():
         case "cars":
-            _ = sqlapp.insertCar(lowerCaseKeyDict(replace_dict_empty_string_vals_with_none(request.form)).lowercaseKeyDict)
+            _ = sqlapp.insertCar(req_form_dict)
         case "parts":
             raise NotImplementedError
         case "employees":
-            _ = sqlapp.insertEmployee(lowerCaseKeyDict(replace_dict_empty_string_vals_with_none(request.form)).lowercaseKeyDict)
+            _ = sqlapp.insertEmployee(req_form_dict)
         case "workefforts":
             raise NotImplementedError
         case _:
