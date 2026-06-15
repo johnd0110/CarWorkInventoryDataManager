@@ -4,3 +4,4 @@ Design/
 .idea/
 /sql/conversion/*
 !/sql/conversion/conversion_helper.py
+**/__pycache__/
