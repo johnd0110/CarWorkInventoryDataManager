@@ -50,9 +50,9 @@ It allows for recording of cars, the items purchased and used for a particular c
 - Pass the data to the relevant macros from [tables.html](CarWorkInventoryDataManager/web/templates/modules/tables.html) and [forms.html](CarWorkInventoryDataManager/web/templates/modules/forms.html) which can be used to quickly create a new web page if desired or add/modify an existing one
   - See [tableConfig.py](CarWorkInventoryDataManager/web/tableConfig.py) and [templates](CarWorkInventoryDataManager/web/templates/) for examples.
 - Since Sqlite uses unix timestamps, the earliest date that can be stored is `1/1/1970 00:00:00` and the latest is `12/31/9999 23:59:59` 
-  - There is a [SQL_Constants.py](sql/SQL_Constants.py) file containing these values as constants for ease of access. 
+  - There is a [SQL_Constants.py](CarWorkInventoryDataManager/sql/SQL_Constants.py) file containing these values as constants for ease of access. 
 ##### Data Conversion
-- [conversion_helper.py](CarWorkInventoryDataManager/sql/conversion/conversion_helper.py) is provided
+- [conversion_helper.py](CarWorkInventoryDataManager/conversion/conversion_helper.py) is provided
   - This module provides a variety of dataclasses for storing data to be converted in a structured format
     - Serialization methods available to easily translate the data into a format that can be read by the carworkinvsql database object and insert the data into the database
   - Also, may have functions to assist with normalizing data such as converting dollar strings (e.g. $100 -> 100.0) into its appropriate value and data type
