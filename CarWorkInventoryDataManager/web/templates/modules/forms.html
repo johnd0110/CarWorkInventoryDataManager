@@ -1,0 +1,40 @@
+{% macro generateTableForm(formID, tableColumnsAndAttributes, legendText="Add New Entry") %}
+    {# Builds out a form which gathers data for a SQL Insert dynamically based on the provided column names and attributes object.
+       Form ID determines which table to insert into (Refer to web/web_display.py for the defined Form IDs). #}
+    {% if tableColumnsAndAttributes %}
+        {% set formID = formID ~ "_form" %}
+        <form method="post" autocomplete="off" id={{formID}}>
+            {# Build out the form inputs regardless, but they will be disabled if any one of the input fields have invalid configuration,
+            in order to prevent a user from triggering an INSERT error and to signal an error via the UI #}
+            <fieldset {{disabled if not tableColumnsAndAttributes.HasValidInputs() }}>
+                <legend> {{legendText}} </legend>
+                {% for columnName, attributes in tableColumnsAndAttributes.items() %}
+                    {% if attributes.InputType != InputTypes.NOTINPUT.value %}
+                        {% set inputId = columnName ~ "_input" %}
+                        <label {{"for=" ~ inputId}}> {{ textMap[columnName] }} </label>
+                        <br/>
+                        {% if attributes.InputType == InputTypes.DROPDOWN.value %}
+                            {% if attributes.HasValidDropDownData() %}
+                                {% set dropDownData = attributes.dropDownData %}
+                                <select id={{inputId}} name={{dropDownData[2]}} {{"required" if attributes.requiredInput}}>
+                                    {% for row in dropDownData[1] %}
+                                        <option value={{row[dropDownData[0]]}}>{{row[columnName]}}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <p> Error: No Dropdown data found for dropdown input. </p>
+                            {% endif %}
+                        {% elif attributes.InputType == InputTypes.TEXTAREA.value %}
+                            <textarea id={{inputId}} name={{attributes.InputAlias if attributes.InputAlias else columnName}} spellcheck="true" autocomplete="on" wrap={{attributes.wrap}} ></textarea>
+                        {% else %}
+                            <input type={{attributes.InputType}} spellcheck="true" autocomplete="on" {{"min=" ~ attributes.MinMaxStep[0] ~ " max=" ~ attributes.MinMaxStep[1] ~ " step=" ~ attributes.MinMaxStep[2] if attributes.MinMaxStep}} id={{inputId}} name={{attributes.InputAlias if attributes.InputAlias else columnName}} {{"required" if attributes.requiredInput}} />
+                        {% endif %}
+                        <br/>
+                    {% endif %}
+                {% endfor %}
+                <button type="submit"> Submit </button>
+                <input type="hidden" id={{formID}} name="formid" value={{formID}}> {# Hidden input field so that we can store an identifier for the form submission allowing us to know which table to insert into #}
+            </fieldset>
+        </form>
+    {% endif %}
+{% endmacro %}

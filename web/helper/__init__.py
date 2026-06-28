@@ -1,3 +1,0 @@
-from .decorators import addGAttr
-from .tableConfig import setCarsTableAndInputConfig, setCarsWithViewEditLinksTableAndInputConfig, setEmployeesTableConfig, setItemsTableAndInputConfig, setWorkEffortsByCarWithEmployeesTableAndInputConfig
-from .tableConfig import columnWebAttributes, columnNamesAndAttributes, VisibilityOptions, InputTypes

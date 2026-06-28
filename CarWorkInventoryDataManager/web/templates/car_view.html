@@ -1,0 +1,22 @@
+{% extends "base/layout.html" %}
+
+{% block title %} Car {% endblock %}
+
+{% block main %}
+    <a href={{url_for('web_home.main_page')}}> Home </a>
+
+    {{ tables.displayResults('singlecar', carssqlres) }}
+    {% if request.path.startswith("/car/edit") %}
+        {{forms.generateTableForm('edit_car', carssqlres[1], legendText="Edit Entry")}}
+    {% endif %}
+
+    {% if itemssqlres %}
+        {{ tables.displayResults('items', itemssqlres) }}
+        {{ forms.generateTableForm('items', itemssqlres[1]) }}
+    {% endif %}
+
+    {% if workeffortssqlres %}
+        {{ tables.displayResults('workefforts', workeffortssqlres) }}
+        {{ forms.generateTableForm('workefforts', workeffortssqlres[1]) }}
+    {% endif %}
+{% endblock %}

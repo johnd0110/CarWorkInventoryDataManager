@@ -1,0 +1,27 @@
+[project]
+name = "CarWorkInventoryDataManager"
+version = "0.2.1"
+authors = [
+    { name="John Diep", email="johndiep0110@gmail.com" },
+]
+description = "Flask-Based Web App for managing car repair/refresh information for resale/flipping."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "flask",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+
+[build-system]
+requires = ["flit_core >= 3.12.0, <4"]
+build-backend = "flit_core.buildapi"
+
+[project.urls]
+Homepage = "https://github.com/johnd0110/CarWorkInventoryDataManager"
+Issues = "https://github.com/johnd0110/CarWorkInventoryDataManager/issues"

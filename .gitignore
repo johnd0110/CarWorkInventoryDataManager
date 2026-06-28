@@ -2,7 +2,7 @@
 Design/
 .venv/
 .idea/
-/sql/conversion/*
-!/sql/conversion/conversion_helper.py
+/CarWorkInventoryDataManager/conversion/*
+!/CarWorkInventoryDataManager/conversion/conversion_helper.py
 **/__pycache__/
 *.pyc

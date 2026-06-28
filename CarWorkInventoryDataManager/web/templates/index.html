@@ -1,0 +1,11 @@
+{% extends "base/layout.html" %}
+
+{% block title %} Main {% endblock %}
+
+{% block main %}
+    {{ tables.displayResults('cars', carssqlres) }}
+    {{ forms.generateTableForm('cars', carssqlres[1]) }}
+
+    {{ tables.displayResults('employees', employeessqlres) }}
+    {{ forms.generateTableForm('employees', employeessqlres[1]) }}
+{% endblock %}

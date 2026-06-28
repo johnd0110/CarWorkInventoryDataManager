@@ -1,0 +1,111 @@
+{% macro displayResults(tableName, sqlresults) %}
+    {# Generates a HTML table representing the provided SQL Query results: sqlresults
+       The styling of the table is dynamically configured on a per-column basis as determined by the ColumnWebAttributes object associated with each column #}
+
+    {# NOTE: Links/Events have not been implemented for the nested tables, may need to come back to this if it is desired #}
+
+    {# Helper macros #}
+    {% set tableColumnIdSuffix = "_tablecolumn" %}
+    {% macro generateTableHeadersFromColumnList(columnNamesAndAttrs) %}
+        {# Generates table headers for the provided column Names and attributes object.
+           May dynamically show an empty header if the makeTableHeader Column Web Attribute is set to False #}
+
+        <thead>
+            <tr>
+                {% for columnName, attributes in columnNamesAndAttrs.items() %}
+                    <th scope="col" id={{columnName ~ tableColumnIdSuffix}}> {{textMap[columnName] if attributes.makeTableHeader}} </th>
+                {% endfor %}
+            </tr>
+        </thead>
+    {% endmacro %}
+
+    {% macro generateColumnGroupsForSqlColumns(tableColumnsAndAttrs) %}
+        {# Generates column groups for the provided table columns and attributes object.
+           One Col Tag is generated for each column with the visibility attribute set according to the associated ColumnWebAttributes instance #}
+
+        {% macro generateColElementWithVisibilityForColumn(visibilityOption) %}
+            <col span="1" style={{"visibility:" ~ visibilityOption}}>
+        {% endmacro %}
+
+        {% if tableColumnsAndAttrs %}
+            <colgroup>
+                {% for columnAttributes in tableColumnsAndAttrs.values() %}
+                    {{ generateColElementWithVisibilityForColumn(columnAttributes.visibility) }}
+                {% endfor %}
+
+                {% if tableColumnsAndAttrs.nestColumnExists(True) %}
+                    {# All columns have isNestColumn = True,
+                       therefore we assume that we are generating a column group for the parent of a nested table
+                       thus we generate an additional column for the actual nested table itself #}
+
+                    {{ generateColElementWithVisibilityForColumn(VisibilityOptions.INITIAL.value) }}
+                {% endif %}
+            </colgroup>
+        {% endif %}
+    {% endmacro %}
+
+    {% macro makeTableCellForSqlResultItem(columnName, columnAttributes, columnValueDict) %}
+        <td headers={{columnName ~ tableColumnIdSuffix}}>
+            {% set value = columnValueDict[columnName] %}
+            {% if columnAttributes.HasValidUrlData() %}
+                <a href={{url_for(columnAttributes.urlData[0], keyorid=columnValueDict[columnAttributes.urlData[2]])}}>
+                    {{columnAttributes.urlData[1] if not value else value }}
+                </a>
+            {% else %}
+                {{ value }}
+            {% endif %}
+        </td>
+    {% endmacro %}
+
+    {% set tableName = tableName ~ "_table" %}
+    {% set sqlResultData = sqlresults[0] %}
+    {% if sqlResultData %}
+        <table id={{tableName}}>
+            {% set tableColumns = sqlresults[1] %}
+
+            {# If there exists any nest columns then we will group using the nest columns,
+               otherwise we default to using every column from the result set to prevent nested data from forming #}
+            {% set nestedOnColumnNameAttributes = tableColumns.getNestColumnsSubset() if tableColumns.nestColumnExists() else tableColumns %}
+
+            {{ generateColumnGroupsForSqlColumns(nestedOnColumnNameAttributes) }}
+            {{ generateTableHeadersFromColumnList(nestedOnColumnNameAttributes) }}
+
+            <tbody>
+                {% for groupColumnKeyDict, group in sqlResultData | groupSqlResultsByColumns(nestedOnColumnNameAttributes.columnNames) %}
+                    <tr>
+                        {# Generate table columns for all the sql columns we used to generate the nested data #}
+                        {# In the case of no isNestColumn = true columns, this will serve to generate a regular table #}
+                        {% for keyColumn in groupColumnKeyDict %}
+                            {{ makeTableCellForSqlResultItem(keyColumn, tableColumns[keyColumn], groupColumnKeyDict) }}
+                        {% endfor %}
+
+                        {# When the group keys match the first grouped row,
+                           it means that every column was used to group the data
+                           meaning that each result set row is a unique group
+                           thus there is no nested data to display. #}
+                        {% if groupColumnKeyDict != group[0] %}
+                            <td>
+                                <table>
+                                    {% set nestedResultColumnAttrs = tableColumns.getNestColumnsSubset(true)%}
+                                    {{ generateColumnGroupsForSqlColumns(nestedResultColumnAttrs) }}
+                                    {{ generateTableHeadersFromColumnList(nestedResultColumnAttrs) }}
+                                    <tbody>
+                                        {% for row in group %}
+                                            <tr>
+                                                {% for nestedResultColumn in nestedResultColumnAttrs %}
+                                                    {{ makeTableCellForSqlResultItem(nestedResultColumn, tableColumns[nestedResultColumn], row) }}
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p id={{tableName}}> No results found. </p>
+    {% endif %}
+{% endmacro %}
