@@ -33,7 +33,7 @@
                     {{ generateColElementWithVisibilityForColumn(columnAttributes.visibility) }}
                 {% endfor %}
 
-                {% if tableColumnsAndAttrs.nestColumnExists(True) %}
+                {% if tableColumnsAndAttrs.nestColumnExists(true) %}
                     {# All columns have isNestColumn = True,
                        therefore we assume that we are generating a column group for the parent of a nested table
                        thus we generate an additional column for the actual nested table itself #}
@@ -52,7 +52,7 @@
                     {{columnAttributes.urlData[1] if not value else value }}
                 </a>
             {% else %}
-                {{ value }}
+                {{"{0:0.{1}f}".format(value, columnAttributes.decimalPlaces) if value is number else value}}
             {% endif %}
         </td>
     {% endmacro %}
@@ -63,9 +63,39 @@
         <table id={{tableName}}>
             {% set tableColumns = sqlresults[1] %}
 
+            {% macro generateTotalFooter(tableColumnNamesAndAttrs, tableSqlResultData, isParentTable=false) %}
+                {% set footerColumnIntersection = tableColumnNamesAndAttrs.getFooterTotalColumnsSubset() %}
+                {% if footerColumnIntersection and not isParentTable %}
+                    <tfoot>
+                        {% set colSpansAndFooterColumnNamesWithFiller = tableColumnNamesAndAttrs.generateColSpansAndFooterColumnNamesWithFiller() %}
+
+                        {% macro makeFooterRow(isHeaderRow) %}
+                            <tr>
+                                {% set cellElementTag = "th" if isHeaderRow else "td" %}
+                                {% for footerCellColSpan, footerColumnName in colSpansAndFooterColumnNamesWithFiller %}
+                                    {% set footerColumnAttributes = footerColumnIntersection[footerColumnName] %}
+                                    {% set footerHeaderTextMapKey = footerColumnAttributes.footerTotalTextMapKey if footerColumnName %}
+                                    <{{cellElementTag}} colspan={{footerCellColSpan}} {{"scope=col" if isHeaderRow}} {% if footerColumnName %}{{"id=" ~ footerHeaderTextMapKey ~ tableColumnIdSuffix if isHeaderRow else "headers=" ~ footerHeaderTextMapKey ~ tableColumnIdSuffix}}{% endif %}>
+                                        {% if isHeaderRow %}
+                                            {{textMap[footerHeaderTextMapKey] if footerHeaderTextMapKey}}
+                                        {% else %}
+                                            {{"{0:0.{1}f}".format(tableSqlResultData | sum(attribute=footerColumnName), footerColumnAttributes.decimalPlaces) if footerColumnName}}
+                                        {% endif %}
+                                    </{{cellElementTag}}>
+                                {% endfor %}
+                            </tr>
+                        {% endmacro %}
+
+                        {{makeFooterRow(true)}}
+                        {{makeFooterRow(false)}}
+                    </tfoot>
+                {% endif %}
+            {% endmacro %}
+
             {# If there exists any nest columns then we will group using the nest columns,
                otherwise we default to using every column from the result set to prevent nested data from forming #}
-            {% set nestedOnColumnNameAttributes = tableColumns.getNestColumnsSubset() if tableColumns.nestColumnExists() else tableColumns %}
+            {% set hasNestedTable = tableColumns.nestColumnExists() %}
+            {% set nestedOnColumnNameAttributes = tableColumns.getNestColumnsSubset() if hasNestedTable else tableColumns %}
 
             {{ generateColumnGroupsForSqlColumns(nestedOnColumnNameAttributes) }}
             {{ generateTableHeadersFromColumnList(nestedOnColumnNameAttributes) }}
@@ -79,11 +109,7 @@
                             {{ makeTableCellForSqlResultItem(keyColumn, tableColumns[keyColumn], groupColumnKeyDict) }}
                         {% endfor %}
 
-                        {# When the group keys match the first grouped row,
-                           it means that every column was used to group the data
-                           meaning that each result set row is a unique group
-                           thus there is no nested data to display. #}
-                        {% if groupColumnKeyDict != group[0] %}
+                        {% if hasNestedTable %}
                             <td>
                                 <table>
                                     {% set nestedResultColumnAttrs = tableColumns.getNestColumnsSubset(true)%}
@@ -98,12 +124,14 @@
                                             </tr>
                                         {% endfor %}
                                     </tbody>
+                                    {{generateTotalFooter(nestedResultColumnAttrs, group)}}
                                 </table>
                             </td>
                         {% endif %}
                     </tr>
                 {% endfor %}
             </tbody>
+            {{generateTotalFooter(nestedOnColumnNameAttributes, sqlResultData, isParentTable=hasNestedTable)}}
         </table>
     {% else %}
         <p id={{tableName}}> No results found. </p>

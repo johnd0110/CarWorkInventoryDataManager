@@ -1,5 +1,3 @@
-
-
 # What this is:
 This is a web app built in Flask designed for car enthusiasts and mechanics who work on cars and wish to record data about the cars they work on.
 
@@ -56,7 +54,7 @@ It allows for recording of cars, the items purchased and used for a particular c
   - This module provides a variety of dataclasses for storing data to be converted in a structured format
     - Serialization methods available to easily translate the data into a format that can be read by the carworkinvsql database object and insert the data into the database
   - Also, may have functions to assist with normalizing data such as converting dollar strings (e.g. $100 -> 100.0) into its appropriate value and data type
-#### Custom CLI Commands
+##### Custom CLI Commands
 - How to call custom CLI command: `flask --app CarWorkInventoryDataManager:create_and_initialize_app CUSTOM_COMMAND_HERE`
   - `initTestData`
     - Clears out existing database data and prepopulates it with fake test data 

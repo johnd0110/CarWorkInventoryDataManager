@@ -31,6 +31,10 @@ class columnWebAttributes:
              A string representing a default row value to show for the link in case there is no value in the sql data already.
              A string representing the columnName of the table from which a value should be retrieved for the row clicked from to be passed when the link is clicked
     wrap: WrapOptions value to set in a textarea element's wrap attribute. Defaults to soft. Only has an effect on textarea form inputs.
+    footerTotalTextMapKey: A text map key to retrieve a decode for the generated footer total of this column.
+                           Doubles as an indicator for if a footer total should be calculated and shown for the column
+    decimalPlaces: The number of decimal places to display the values of the column with, only applies if the values are numbers
+                   Also applies to footer totals
     """
     dropDownData: tuple[str, list, str] = None
     visibility: str = VisibilityOptions.INITIAL.value
@@ -42,6 +46,11 @@ class columnWebAttributes:
     makeTableHeader: bool = True
     urlData: tuple[str, str, str] = None
     wrap: WrapOptions = WrapOptions.SOFT.value
+    footerTotalTextMapKey: str = ""
+    decimalPlaces: int = 0
+
+    def isFooterTotalColumn(self):
+        return bool(self.footerTotalTextMapKey)
 
     def HasValidDropDownData(self):
         """
@@ -71,12 +80,39 @@ class columnNamesAndAttributes(columnNames, lowerCaseKeyDict):
         columnNames.__init__(self, columnNamesList)
         lowerCaseKeyDict.__init__(self, {oneColumnName: columnWebAttributes() for oneColumnName in self.columnNames})
 
+    def _getSubsetByFilterFunc(self, filterFunc):
+        return self.from_columnnamesattributes_dict({columnName: colAttr for columnName, colAttr in self.items() if filterFunc((columnName, colAttr))})
+
+    def getFooterTotalColumnsSubset(self):
+        return self._getSubsetByFilterFunc(lambda item: item[1].isFooterTotalColumn())
+
     def getNestColumnsSubset(self, getOpposite: bool=False):
-        return self.from_columnnamesattributes_dict({columnName: colAttr for columnName, colAttr in self.items() if colAttr.isNestColumn ^ getOpposite})
+        return self._getSubsetByFilterFunc(lambda item: item[1].isNestColumn ^ getOpposite)
 
     def nestColumnExists(self, checkAll: bool=False):
         nestColumnBoolList = [colAttr.isNestColumn for colAttr in self.values()]
         return all(nestColumnBoolList) if checkAll else any(nestColumnBoolList)
+
+    def generateColSpansAndFooterColumnNamesWithFiller(self):
+        enumeratedVisibleColumnNames = list(enumerate(self.keys()))
+        tableIndicesAndFooterColumnNames = [indexAndColumnNameTuple for indexAndColumnNameTuple in enumeratedVisibleColumnNames if self[indexAndColumnNameTuple[1]].isFooterTotalColumn()]
+
+        colSpanAndFooterColumnNamesListWithFiller = []
+        visibleColumnNamesListLength = len(enumeratedVisibleColumnNames)
+        currentLength = 0
+        for tableIndex, footerColumnName in tableIndicesAndFooterColumnNames:
+            colSpanAndFooterColumnNamesListWithFiller.append((tableIndex - currentLength, ""))
+            currentLength += tableIndex
+
+            colSpanAndFooterColumnNamesListWithFiller.append((1, footerColumnName))
+            currentLength += 1
+
+        if currentLength < visibleColumnNamesListLength:
+            colSpanAndFooterColumnNamesListWithFiller.append((visibleColumnNamesListLength - currentLength, ""))
+        elif currentLength > visibleColumnNamesListLength:
+            raise ValueError(f"Unexpected Error: Size of list of column spans and names for footer exceeds visible column names list size.")
+
+        return colSpanAndFooterColumnNamesListWithFiller
 
     def HasValidInputs(self):
         for columnName, attributes in self.items():

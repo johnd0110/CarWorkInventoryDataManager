@@ -21,6 +21,8 @@ def setCarsTableAndInputConfig(carsSqlResult):
 
     carsSqlResult["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
+    carsSqlResult["totalInvestedValue"].decimalPlaces = 2
+
     setPurchasesTableAndInputConfig(carsSqlResult)
 
     setValueEstimatesTableAndInputConfig(carsSqlResult)
@@ -57,23 +59,31 @@ def setValueEstimatesTableAndInputConfig(sqlCNA):
     sqlCNA["estimatedValue"].InputType = InputTypes.NUMBER.value
     sqlCNA["estimatedValue"].requiredInput = False
     sqlCNA["estimatedValue"].MinMaxStep = ("0", None, "0.01")
+    sqlCNA["estimatedValue"].decimalPlaces = 2
 
 def setPurchasesTableAndInputConfig(sqlCNA):
     sqlCNA["taxesPaid"].InputType = InputTypes.NUMBER.value
     sqlCNA["taxesPaid"].requiredInput = True
     sqlCNA["taxesPaid"].MinMaxStep = ("0", None, "0.01")
+    sqlCNA["taxesPaid"].decimalPlaces = 2
 
     sqlCNA["shippingCost"].InputType = InputTypes.NUMBER.value
     sqlCNA["shippingCost"].requiredInput = True
     sqlCNA["shippingCost"].MinMaxStep = ("0", None, "0.01")
+    sqlCNA["shippingCost"].decimalPlaces = 2
 
     sqlCNA["cost"].InputType = InputTypes.NUMBER.value
     sqlCNA["cost"].requiredInput = True
     sqlCNA["cost"].MinMaxStep = (None, None, "0.01")
+    sqlCNA["cost"].decimalPlaces = 2
 
     sqlCNA["refundAmount"].InputType = InputTypes.NUMBER.value
     sqlCNA["refundAmount"].requiredInput = True
     sqlCNA["refundAmount"].MinMaxStep = ("0", None, "0.01")
+    sqlCNA["refundAmount"].decimalPlaces = 2
+
+    sqlCNA["purchaseTotal"].footerTotalTextMapKey = "footerTotalSpent"
+    sqlCNA["purchaseTotal"].decimalPlaces = 2
 
 def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, employeessqldata):
     workeffortssqlCNA["employeeKey"].isNestColumn = True
@@ -90,10 +100,13 @@ def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, emplo
     workeffortssqlCNA["laborHours"].InputType = InputTypes.NUMBER.value
     workeffortssqlCNA["laborHours"].requiredInput = True
     workeffortssqlCNA["laborHours"].MinMaxStep = ("0", "24", "0.01")
+    workeffortssqlCNA["laborHours"].decimalPlaces = 2
 
     workeffortssqlCNA["estimatedPay"].InputType = InputTypes.NUMBER.value
     workeffortssqlCNA["estimatedPay"].requiredInput = True
     workeffortssqlCNA["estimatedPay"].MinMaxStep = ("0", None, "0.01")
+    workeffortssqlCNA["estimatedPay"].decimalPlaces = 2
+    workeffortssqlCNA["estimatedPay"].footerTotalTextMapKey = "footerTotalPay"
 
     workeffortssqlCNA["workType"].InputType = InputTypes.TEXT.value
     workeffortssqlCNA["workType"].requiredInput = True

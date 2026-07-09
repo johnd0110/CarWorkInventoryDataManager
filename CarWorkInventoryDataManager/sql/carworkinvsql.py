@@ -26,7 +26,7 @@ class carWorkInventorySQL(baseSQL):
 
         self.connection.set_authorizer(carWorkInventorySQL.CWISqlAuthorizerCallback)
 
-    def CWI_executeAndCommitSQLStatement(self, SQLStatement: str, placeholderValues: tuple | dict = (), returnColumnNames: bool = True, keepTransactionOpen: bool = False) -> tuple[list, columnNamesAndAttributes | None]:
+    def CWI_executeSQLStatement(self, SQLStatement: str, placeholderValues: tuple | dict = (), returnColumnNames: bool = True, keepTransactionOpen: bool = False) -> tuple[list, columnNamesAndAttributes | None]:
         """
         Custom call to executeAndCommitSQLStatement that provides the ColumnNamesAndAttributes class type
         so that the column names provided back have the extra configurable attributes for the HTML table display attached
@@ -43,111 +43,129 @@ class carWorkInventorySQL(baseSQL):
 
     @autoSetHiddenColumnsByNames(["carKey"])
     def getCarsWithViewEditLinksAndTotalValue(self) -> tuple[list, columnNamesAndAttributes | None]:
-        return self.CWI_executeAndCommitSQLStatement("""SELECT c.carKey, 
-                                                               c.make, 
-                                                               c.model, 
-                                                               c.year, 
-                                                               c.engineType, 
-                                                               c.mileage, 
-                                                               p.taxesPaid,
-                                                               p.shippingCost,
-                                                               p.cost,
-                                                               p.refundAmount,
-                                                               p.totalSpent as purchaseTotal,
+        return self.CWI_executeSQLStatement("""SELECT c.carKey, 
+                                                      c.make, 
+                                                      c.model, 
+                                                      c.year, 
+                                                      c.engineType, 
+                                                      c.mileage, 
+                                                      p.taxesPaid,
+                                                      p.shippingCost,
+                                                      p.cost,
+                                                      p.refundAmount,
+                                                      p.purchaseTotal,
                                                                 
-                                                               (SELECT TOTAL(p.totalSpent)
-                                                                FROM Items itm
-                                                                JOIN purchases p
-                                                                ON itm.purchaseKey = p.purchaseKey 
-                                                                WHERE c.carKey = itm.inCarKey) + 
-                                                               (SELECT TOTAL(we.estimatedPay) 
-                                                                FROM WorkEfforts we 
-                                                                WHERE c.carKey = we.carKeyWorkedOn) + 
-                                                               p.totalSpent AS [totalInvestedValue],
+                                                      (SELECT TOTAL(p.purchaseTotal)
+                                                       FROM Items itm
+                                                       JOIN purchases p
+                                                       ON itm.purchaseKey = p.purchaseKey 
+                                                       WHERE c.carKey = itm.inCarKey) + 
+                                                       (SELECT TOTAL(we.estimatedPay) 
+                                                        FROM WorkEfforts we 
+                                                        WHERE c.carKey = we.carKeyWorkedOn) + 
+                                                      p.purchaseTotal AS [totalInvestedValue],
                                                                 
-                                                               COALESCE(ve.estimatedValue, 0) as estimatedValue, 
-                                                               c.additionalNotes,
-                                                               'View' as viewLink,
-                                                               'Edit' as editLink 
-                                                               FROM Cars c
-                                                               JOIN Purchases p
-                                                               ON c.purchaseKey = p.purchaseKey
-                                                               LEFT JOIN ValueEstimates ve
-                                                               ON c.valueEstimateKey = ve.valueEstimateKey""")
+                                                      COALESCE(ve.estimatedValue, 0) as estimatedValue, 
+                                                      c.additionalNotes,
+                                                      'View' as viewLink,
+                                                      'Edit' as editLink 
+                                                      FROM Cars c
+                                                      JOIN Purchases p
+                                                      ON c.purchaseKey = p.purchaseKey
+                                                      LEFT JOIN ValueEstimates ve
+                                                      ON c.valueEstimateKey = ve.valueEstimateKey""")
 
     @autoSetHiddenColumnsByNames(["carKey"])
-    def getCarById(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
-        return self.CWI_executeAndCommitSQLStatement("""SELECT c.carKey, 
-                                                                            c.make, 
-                                                                            c.model, 
-                                                                            c.year, 
-                                                                            c.engineType, 
-                                                                            c.mileage,
-                                                                            p.taxesPaid,
-                                                                            p.shippingCost,
-                                                                            p.cost,
-                                                                            p.refundAmount,
-                                                                            p.totalSpent as purchaseTotal,
-                                                                             
-                                                                            (SELECT TOTAL(p.totalSpent)
-                                                                             FROM Items itm
-                                                                             JOIN purchases p
-                                                                             ON itm.purchaseKey = p.purchaseKey 
-                                                                             WHERE c.carKey = itm.inCarKey) + 
-                                                                            (SELECT TOTAL(we.estimatedPay) 
-                                                                             FROM WorkEfforts we 
-                                                                             WHERE c.carKey = we.carKeyWorkedOn) + 
-                                                                            p.totalSpent AS [totalInvestedValue], 
-                                                                            
-                                                                            COALESCE(ve.estimatedValue, 0) as estimatedValue,
-                                                                            c.additionalNotes
-                                                                            FROM Cars c
-                                                                            JOIN Purchases p
-                                                                            ON c.purchaseKey = p.purchaseKey
-                                                                            LEFT JOIN ValueEstimates ve
-                                                                            ON c.valueEstimateKey = ve.valueEstimateKey
-                                                                            WHERE c.carKey = ?""",
-                                                     (carID,))
+    def getCarById(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT c.carKey, 
+                                                                   c.make, 
+                                                                   c.model, 
+                                                                   c.year, 
+                                                                   c.engineType, 
+                                                                   c.mileage,
+                                                                   p.taxesPaid,
+                                                                   p.shippingCost,
+                                                                   p.cost,
+                                                                   p.refundAmount,
+                                                                   p.purchaseTotal,
+                                                                    
+                                                                   (SELECT TOTAL(p.purchaseTotal)
+                                                                    FROM Items itm
+                                                                    JOIN purchases p
+                                                                    ON itm.purchaseKey = p.purchaseKey 
+                                                                    WHERE c.carKey = itm.inCarKey) + 
+                                                                   (SELECT TOTAL(we.estimatedPay) 
+                                                                    FROM WorkEfforts we 
+                                                                    WHERE c.carKey = we.carKeyWorkedOn) + 
+                                                                   p.purchaseTotal AS [totalInvestedValue], 
+                                                                   
+                                                                   COALESCE(ve.estimatedValue, 0) as estimatedValue,
+                                                                   c.additionalNotes
+                                                                   FROM Cars c
+                                                                   JOIN Purchases p
+                                                                   ON c.purchaseKey = p.purchaseKey
+                                                                   LEFT JOIN ValueEstimates ve
+                                                                   ON c.valueEstimateKey = ve.valueEstimateKey
+                                                                   WHERE c.carKey = ?""",
+                                            (carKey,))
+    def getItemsAndItemGroupTransactionsForCar(self, carKey) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT itg.itemGroupTransactionKey,
+                                                      itg.description as itemGroupDescription,
+                                                      itm.itemKey,
+                                                      itm.inCarKey,
+                                                      itm.source,
+                                                      itm.itemName,
+                                                      COALESCE(ve.estimatedValue, 0) as estimatedValue,
+                                                      itm.additionalNotes
+                                                      FROM itemGroupTransaction itg
+                                                      JOIN items itm 
+                                                      ON itg.itemGroupTransactionKey = itm.itemGroupTransactionKey
+                                                      JOIN Purchases p
+                                                      ON itm.purchaseKey = p.purchaseKey
+                                                      LEFT JOIN ValueEstimates ve
+                                                      ON itm.valueEstimateKey = ve.valueEstimateKey
+                                                      WHERE itm.inCarKey = ?""",
+                                            (carKey,))
 
     @autoSetHiddenColumnsByNames(["itemKey", "inCarKey"])
-    def getItemsForCar(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
-        return self.CWI_executeAndCommitSQLStatement("""SELECT itm.itemKey, 
-                                                                           itm.inCarKey,
-                                                                           itm.source, 
-                                                                           itm.itemName, 
-                                                                           p.taxesPaid, 
-                                                                           p.shippingCost, 
-                                                                           p.cost,
-                                                                           p.refundAmount,
-                                                                           p.totalSpent as purchaseTotal,
-                                                                           COALESCE(ve.estimatedValue, 'N/A') as estimatedValue, 
-                                                                           itm.additionalNotes 
-                                                                           FROM Items itm
-                                                                           JOIN Purchases p
-                                                                           ON itm.purchaseKey = p.purchaseKey
-                                                                           LEFT JOIN ValueEstimates ve
-                                                                           ON itm.valueEstimateKey = ve.valueEstimateKey 
-                                                                           WHERE itm.inCarKey = ?""", placeholderValues=(carID,))
+    def getItemsForCar(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT itm.itemKey, 
+                                                                  itm.inCarKey,
+                                                                  itm.source, 
+                                                                  itm.itemName, 
+                                                                  p.taxesPaid, 
+                                                                  p.shippingCost, 
+                                                                  p.cost,
+                                                                  p.refundAmount,
+                                                                  p.purchaseTotal,
+                                                                  COALESCE(ve.estimatedValue, 'N/A') as estimatedValue, 
+                                                                  itm.additionalNotes 
+                                                                  FROM Items itm
+                                                                  JOIN Purchases p
+                                                                  ON itm.purchaseKey = p.purchaseKey
+                                                                  LEFT JOIN ValueEstimates ve
+                                                                  ON itm.valueEstimateKey = ve.valueEstimateKey 
+                                                                  WHERE itm.inCarKey = ?""", placeholderValues=(carKey,))
 
     @autoSetHiddenColumnsByNames(["employeeKey"])
     def getEmployees(self) -> tuple[list, columnNamesAndAttributes | None]:
-        return self.CWI_executeAndCommitSQLStatement("SELECT employeeKey, employeeName FROM Employees")
+        return self.CWI_executeSQLStatement("SELECT employeeKey, employeeName FROM Employees")
 
     @autoSetHiddenColumnsByNames(["workEffortKey", "carKeyWorkedOn", "employeeKey"])
-    def getWorkEffortByCarWithEmployees(self, carID: int) -> tuple[list, columnNamesAndAttributes | None]:
-        return self.CWI_executeAndCommitSQLStatement("""SELECT we.workEffortKey, 
-                                                                           we.carKeyWorkedOn, 
-                                                                           we.employeeKey, 
-                                                                           emp.EmployeeName, 
-                                                                           we.workEffortDate, 
-                                                                           we.laborHours, 
-                                                                           we.estimatedPay, 
-                                                                           we.workType 
-                                                                     FROM WorkEfforts we 
-                                                                     JOIN Employees emp 
-                                                                     ON we.employeeKey = emp.employeeKey 
-                                                                     WHERE we.carKeyWorkedOn = ?""",
-                                                                  placeholderValues=(carID,))
+    def getWorkEffortByCarWithEmployees(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT we.workEffortKey, 
+                                                                  we.carKeyWorkedOn, 
+                                                                  we.employeeKey, 
+                                                                  emp.EmployeeName, 
+                                                                  we.workEffortDate, 
+                                                                  we.laborHours, 
+                                                                  we.estimatedPay, 
+                                                                  we.workType 
+                                                                  FROM WorkEfforts we 
+                                                                  JOIN Employees emp 
+                                                                  ON we.employeeKey = emp.employeeKey 
+                                                                  WHERE we.carKeyWorkedOn = ?""",
+                                            placeholderValues=(carKey,))
 
     def _insertPurchaseWithOpenTransaction(self, purchaseDataValues: lowerCaseKeyDict):
         """
@@ -155,12 +173,12 @@ class carWorkInventorySQL(baseSQL):
         :param purchaseDataValues: Purchase data values as a dictionary of column names: values
         :return: A sql result set with the newly inserted purchase key
         """
-        purchaseKeyResult, _ = self.CWI_executeAndCommitSQLStatement("""INSERT INTO Purchases(cost, taxesPaid, shippingCost, refundAmount)
-                                                                                    VALUES (:cost, :taxespaid, :shippingcost, :refundamount)
-                                                                                    RETURNING purchaseKey""",
-                                                                     purchaseDataValues.data,
-                                                                     False,
-                                                                     keepTransactionOpen=True)
+        purchaseKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO Purchases(cost, taxesPaid, shippingCost, refundAmount)
+                                                                            VALUES (:cost, :taxespaid, :shippingcost, :refundamount)
+                                                                            RETURNING purchaseKey""",
+                                                            purchaseDataValues.data,
+                                                            False,
+                                                            keepTransactionOpen=True)
         purchaseKeyColumnName = "purchaseKey"
         purchaseDataValues[purchaseKeyColumnName] = purchaseKeyResult[0][purchaseKeyColumnName]
 
@@ -174,24 +192,24 @@ class carWorkInventorySQL(baseSQL):
         estimatedValueColumnName = 'estimatedValue'
         if valueEstimateDataValues.get(estimatedValueColumnName, None):
 
-            valueEstimateKeyResult, _ = self.CWI_executeAndCommitSQLStatement("""INSERT INTO ValueEstimates(estimatedValue)
-                                                            VALUES (:estimatedvalue)
-                                                            RETURNING valueEstimateKey
-                                                            """,
-                                                         valueEstimateDataValues.data,
-                                                         False,
-                                                         keepTransactionOpen=True)
+            valueEstimateKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO ValueEstimates(estimatedValue)
+                                                                                    VALUES (:estimatedvalue)
+                                                                                    RETURNING valueEstimateKey
+                                                                                    """,
+                                                                     valueEstimateDataValues.data,
+                                                                     False,
+                                                                     keepTransactionOpen=True)
             valueEstimateDataValues[valueEstimateKeyColumnName] = valueEstimateKeyResult[0][valueEstimateKeyColumnName]
         else:
             valueEstimateDataValues[valueEstimateKeyColumnName] = None
 
     def _insertItemGroupTransactionWithOpenTransaction(self, itemGroupTransactionDataValues: lowerCaseKeyDict):
-        itemGroupTransactionKeyResult, _ = self.CWI_executeAndCommitSQLStatement("""INSERT INTO ItemGroupTransactions(description)
-                                                                                                VALUES (:itemgroupdescription)
-                                                                                                RETURNING itemGroupTransactionKey""",
-                                                                                 itemGroupTransactionDataValues.data,
-                                                                                 False,
-                                                                                 keepTransactionOpen=True)
+        itemGroupTransactionKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO ItemGroupTransactions(description)
+                                                                                       VALUES (:itemgroupdescription)
+                                                                                       RETURNING itemGroupTransactionKey""",
+                                                                        itemGroupTransactionDataValues.data,
+                                                                        False,
+                                                                        keepTransactionOpen=True)
         itemGroupTransactionKeyColumnName = "itemGroupTransactionKey"
         itemGroupTransactionDataValues[itemGroupTransactionKeyColumnName] = itemGroupTransactionKeyResult[0][itemGroupTransactionKeyColumnName]
 
@@ -207,18 +225,18 @@ class carWorkInventorySQL(baseSQL):
         """
         self._insertPurchaseWithOpenTransaction(carDataValues)
         self._insertValueEstimateWithOpenTransaction(carDataValues)
-        return self.CWI_executeAndCommitSQLStatement("""INSERT INTO Cars(purchaseKey, valueEstimateKey, make, model, year, engineType, mileage, additionalNotes) 
-                                                                    VALUES (:purchasekey, :valueestimatekey, :make, :model, :year, :enginetype, :mileage, :additionalnotes)
-                                                                    RETURNING carKey""",
-                                                     carDataValues.data,
-                                                     False)
+        return self.CWI_executeSQLStatement("""INSERT INTO Cars(purchaseKey, valueEstimateKey, make, model, year, engineType, mileage, additionalNotes) 
+                                                           VALUES (:purchasekey, :valueestimatekey, :make, :model, :year, :enginetype, :mileage, :additionalnotes)
+                                                           RETURNING carKey""",
+                                            carDataValues.data,
+                                            False)
 
     def insertEmployee(self, employeeDataValues: lowerCaseKeyDict):
-        return self.CWI_executeAndCommitSQLStatement("""INSERT INTO Employees(employeeName) 
-                                                                    VALUES (:employeename)
-                                                                    RETURNING employeeKey""",
-                                                     employeeDataValues.data,
-                                                     False)
+        return self.CWI_executeSQLStatement("""INSERT INTO Employees(employeeName) 
+                                                           VALUES (:employeename)
+                                                           RETURNING employeeKey""",
+                                            employeeDataValues.data,
+                                            False)
 
     def insertItem(self, itemDataValues: lowerCaseKeyDict):
         if itemDataValues.get('purchaseKey') is not None:
@@ -238,64 +256,64 @@ class carWorkInventorySQL(baseSQL):
         if itemDataValues.get('itemGroupTransactionKey') is None:
             self._insertItemGroupTransactionWithOpenTransaction(itemDataValues)
 
-        return self.CWI_executeAndCommitSQLStatement("""INSERT INTO Items(itemGroupTransactionKey, purchaseKey, valueEstimateKey, inCarKey, itemName, source, additionalNotes) 
-                                                                    VALUES (:itemgrouptransactionkey, :purchasekey, :valueestimatekey, :incarkey, :itemname, :source, :additionalnotes)
-                                                                    RETURNING itemKey""",
-                                                     itemDataValues.data,
-                                                     False)
+        return self.CWI_executeSQLStatement("""INSERT INTO Items(itemGroupTransactionKey, purchaseKey, valueEstimateKey, inCarKey, itemName, source, additionalNotes) 
+                                                           VALUES (:itemgrouptransactionkey, :purchasekey, :valueestimatekey, :incarkey, :itemname, :source, :additionalnotes)
+                                                           RETURNING itemKey""",
+                                            itemDataValues.data,
+                                            False)
 
     def insertWorkEffort(self, workEffortDataValues: lowerCaseKeyDict):
-        return self.CWI_executeAndCommitSQLStatement("""INSERT INTO WorkEfforts(carKeyWorkedOn, employeeKey, workEffortDate, laborHours, estimatedPay, workType) 
-                                                                    VALUES (:carkeyworkedon, :employeekey, :workeffortdate, :laborhours, :estimatedpay, :worktype)
-                                                                    RETURNING workEffortKey""",
-                                                     workEffortDataValues.data,
-                                                     False)
+        return self.CWI_executeSQLStatement("""INSERT INTO WorkEfforts(carKeyWorkedOn, employeeKey, workEffortDate, laborHours, estimatedPay, workType) 
+                                                           VALUES (:carkeyworkedon, :employeekey, :workeffortdate, :laborhours, :estimatedpay, :worktype)
+                                                           RETURNING workEffortKey""",
+                                            workEffortDataValues.data,
+                                            False)
 
     def updateCarPurchaseAndValueEstimate(self, carDataValues: lowerCaseKeyDict):
-        parentKeysToUpdateResult, _ = self.CWI_executeAndCommitSQLStatement("""SELECT c.purchaseKey,
-                                                                               c.valueEstimateKey
-                                                                               FROM Cars c
-                                                                               WHERE c.carKey = :carkey""",
-                                                                            carDataValues.data,
-                                                                            False)
+        parentKeysToUpdateResult, _ = self.CWI_executeSQLStatement("""SELECT c.purchaseKey,
+                                                                                         c.valueEstimateKey
+                                                                                         FROM Cars c
+                                                                                         WHERE c.carKey = :carkey""",
+                                                                   carDataValues.data,
+                                                                   False)
 
 
         valueEstimateKeyColumnName = "valueEstimateKey"
         if parentKeysToUpdateResult[0][valueEstimateKeyColumnName]:
             #TODO: If no estimated value set then delete value estimate row and set car value estimate key to null
             carDataValues[valueEstimateKeyColumnName] = parentKeysToUpdateResult[0][valueEstimateKeyColumnName]
-            _ = self.CWI_executeAndCommitSQLStatement("""UPDATE ValueEstimates
-                                                         SET estimatedValue = :estimatedvalue
-                                                         WHERE valueEstimateKey = :valueestimatekey""",
-                                                      carDataValues.data,
-                                                      False,
-                                                      True)
+            _ = self.CWI_executeSQLStatement("""UPDATE ValueEstimates
+                                                            SET estimatedValue = :estimatedvalue
+                                                            WHERE valueEstimateKey = :valueestimatekey""",
+                                             carDataValues.data,
+                                             False,
+                                             True)
         else:
             self._insertValueEstimateWithOpenTransaction(carDataValues)
 
         purchaseKeyColumnName = "purchaseKey"
         carDataValues[purchaseKeyColumnName] = parentKeysToUpdateResult[0][purchaseKeyColumnName]
 
-        _ = self.CWI_executeAndCommitSQLStatement("""UPDATE Purchases
-                                                     SET cost = :cost,
-                                                     taxesPaid = :taxespaid,
-                                                     shippingCost = :shippingcost,
-                                                     refundAmount = :refundamount
-                                                     WHERE purchaseKey = :purchasekey""",
-                                                  carDataValues.data,
-                                                  False)
+        _ = self.CWI_executeSQLStatement("""UPDATE Purchases
+                                                        SET cost = :cost,
+                                                        taxesPaid = :taxespaid,
+                                                        shippingCost = :shippingcost,
+                                                        refundAmount = :refundamount
+                                                        WHERE purchaseKey = :purchasekey""",
+                                         carDataValues.data,
+                                         False)
 
-        _ = self.CWI_executeAndCommitSQLStatement("""UPDATE Cars 
-                                                               SET make = :make, 
-                                                               model = :model, 
-                                                               year = :year, 
-                                                               engineType = :enginetype, 
-                                                               mileage = :mileage,
-                                                               additionalNotes = :additionalnotes,
-                                                               valueEstimateKey = :valueestimatekey
-                                                               WHERE carKey = :carkey""",
-                                                               carDataValues.data,
-                                                               False)
+        _ = self.CWI_executeSQLStatement("""UPDATE Cars 
+                                                        SET make = :make, 
+                                                        model = :model, 
+                                                        year = :year, 
+                                                        engineType = :enginetype, 
+                                                        mileage = :mileage,
+                                                        additionalNotes = :additionalnotes,
+                                                        valueEstimateKey = :valueestimatekey
+                                                        WHERE carKey = :carkey""",
+                                         carDataValues.data,
+                                         False)
 
     def nonParentExistsForParentTable(self, unsafeParentTableName: str, unsafeParentKeyColumnName: str) -> bool:
         """
@@ -308,12 +326,12 @@ class carWorkInventorySQL(baseSQL):
         # TODO: To be tested
         # Ensure that the parent table name and parent key column name is a valid table and column name in the database schema
         table_name_res, _ = self.executeSQLStatement("""SELECT sch.tbl_name as table_name,
-                                                                 tbl_info.name as column_name
-                                                                 FROM sqlite_schema sch, 
-                                                                 pragma_table_xinfo(sch.tbl_name) tbl_info
-                                                                 WHERE sch.type = 'table'
-                                                                 AND sch.tbl_name = ?
-                                                                 AND tbl_info.name = ?""",
+                                                                           tbl_info.name as column_name
+                                                                    FROM sqlite_schema sch, 
+                                                                         pragma_table_xinfo(sch.tbl_name) tbl_info
+                                                                    WHERE sch.type = 'table'
+                                                                    AND sch.tbl_name = ?
+                                                                    AND tbl_info.name = ?""",
                                                      (unsafeParentTableName, unsafeParentKeyColumnName),
                                                      columnNamesClassWrapper=None)
         if len(table_name_res) <= 0:
@@ -331,12 +349,12 @@ class carWorkInventorySQL(baseSQL):
 
         # Get all child table names for parentTableName and the associated child key column
         child_tables_res, _ = self.executeSQLStatement("""SELECT sch.tbl_name as child_table_name, 
-                                                                          fkl.from as child_key_column 
-                                                                   FROM sqlite_schema sch,
-                                                                   pragma_foreign_key_list(sch.tbl_name) fkl
-                                                                   WHERE sch.type = 'table'
-                                                                   AND fkl.table = ?
-                                                                   AND fkl.to = ?""",
+                                                                             fkl.from as child_key_column 
+                                                                      FROM sqlite_schema sch,
+                                                                           pragma_foreign_key_list(sch.tbl_name) fkl
+                                                                      WHERE sch.type = 'table'
+                                                                      AND fkl.table = ?
+                                                                      AND fkl.to = ?""",
                                                        (safeParentTableName, safeParentKeyColumnName),
                                                        columnNamesClassWrapper=None)
 

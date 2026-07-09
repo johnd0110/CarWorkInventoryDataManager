@@ -84,7 +84,7 @@ CREATE TABLE Purchases(purchaseKey INTEGER PRIMARY KEY,
                        taxesPaid NUMERIC NOT NULL DEFAULT 0,
                        shippingCost NUMERIC NOT NULL DEFAULT 0,
                        refundAmount NUMERIC NOT NULL DEFAULT 0 CHECK (refundAmount >= 0),
-                       totalSpent NUMERIC AS (cost + taxesPaid + shippingCost - refundAmount));
+                       purchaseTotal NUMERIC AS (cost + taxesPaid + shippingCost - refundAmount));
 
 -- Version history table for the Purchases table
 CREATE TABLE PurchasesHistory(purchaseKey INTEGER NOT NULL,

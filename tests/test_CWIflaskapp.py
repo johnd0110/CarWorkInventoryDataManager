@@ -78,7 +78,7 @@ class CWIFlaskAppTests(baseTestSuite):
         self.exceptionMessageTester(sqlite3.ProgrammingError,
                                     'Cannot operate on a closed database.',
                                     'Unknown Error: ',
-                                    CWI_db.CWI_executeAndCommitSQLStatement,
+                                    CWI_db.CWI_executeSQLStatement,
                                     "SELECT 1")
 
     def testWebHomeNoResultsTextDisplaysWhenNoRelevantDataExists(self):
@@ -142,13 +142,13 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>2012</td>
                             <td headers=enginetype_tablecolumn>test</td>
                             <td headers=mileage_tablecolumn>50000</td>
-                            <td headers=taxespaid_tablecolumn>1</td>
-                            <td headers=shippingcost_tablecolumn>1</td>
-                            <td headers=cost_tablecolumn>1</td>
-                            <td headers=refundamount_tablecolumn>10</td>
-                            <td headers=purchasetotal_tablecolumn>-7</td>
-                            <td headers=totalinvestedvalue_tablecolumn>6501.0</td>
-                            <td headers=estimatedvalue_tablecolumn>0</td>
+                            <td headers=taxespaid_tablecolumn>1.00</td>
+                            <td headers=shippingcost_tablecolumn>1.00</td>
+                            <td headers=cost_tablecolumn>1.00</td>
+                            <td headers=refundamount_tablecolumn>10.00</td>
+                            <td headers=purchasetotal_tablecolumn>-7.00</td>
+                            <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
+                            <td headers=estimatedvalue_tablecolumn>0.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=1)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=1)}>Edit</a></td>
@@ -160,13 +160,13 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>1999</td>
                             <td headers=enginetype_tablecolumn>testtest</td>
                             <td headers=mileage_tablecolumn>1000</td>
-                            <td headers=taxespaid_tablecolumn>0</td>
-                            <td headers=shippingcost_tablecolumn>0</td>
-                            <td headers=cost_tablecolumn>5000</td>
-                            <td headers=refundamount_tablecolumn>0</td>
-                            <td headers=purchasetotal_tablecolumn>5000</td>
-                            <td headers=totalinvestedvalue_tablecolumn>7866.0</td>
-                            <td headers=estimatedvalue_tablecolumn>0</td>
+                            <td headers=taxespaid_tablecolumn>0.00</td>
+                            <td headers=shippingcost_tablecolumn>0.00</td>
+                            <td headers=cost_tablecolumn>5000.00</td>
+                            <td headers=refundamount_tablecolumn>0.00</td>
+                            <td headers=purchasetotal_tablecolumn>5000.00</td>
+                            <td headers=totalinvestedvalue_tablecolumn>7866.00</td>
+                            <td headers=estimatedvalue_tablecolumn>0.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=2)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=2)}>Edit</a></td>
@@ -178,13 +178,13 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>1969</td>
                             <td headers=enginetype_tablecolumn>V8</td>
                             <td headers=mileage_tablecolumn>100000</td>
-                            <td headers=taxespaid_tablecolumn>0</td>
-                            <td headers=shippingcost_tablecolumn>0</td>
-                            <td headers=cost_tablecolumn>20000</td>
-                            <td headers=refundamount_tablecolumn>0</td>
-                            <td headers=purchasetotal_tablecolumn>20000</td>
+                            <td headers=taxespaid_tablecolumn>0.00</td>
+                            <td headers=shippingcost_tablecolumn>0.00</td>
+                            <td headers=cost_tablecolumn>20000.00</td>
+                            <td headers=refundamount_tablecolumn>0.00</td>
+                            <td headers=purchasetotal_tablecolumn>20000.00</td>
                             <td headers=totalinvestedvalue_tablecolumn>20620.37</td>
-                            <td headers=estimatedvalue_tablecolumn>50000</td>
+                            <td headers=estimatedvalue_tablecolumn>50000.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=3)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=3)}>Edit</a></td>
@@ -196,18 +196,30 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>2012</td>
                             <td headers=enginetype_tablecolumn>v9</td>
                             <td headers=mileage_tablecolumn>0</td>
-                            <td headers=taxespaid_tablecolumn>0</td>
-                            <td headers=shippingcost_tablecolumn>0</td>
-                            <td headers=cost_tablecolumn>0</td>
-                            <td headers=refundamount_tablecolumn>0</td>
-                            <td headers=purchasetotal_tablecolumn>0</td>
-                            <td headers=totalinvestedvalue_tablecolumn>-1.0</td>
-                            <td headers=estimatedvalue_tablecolumn>3000</td>
+                            <td headers=taxespaid_tablecolumn>0.00</td>
+                            <td headers=shippingcost_tablecolumn>0.00</td>
+                            <td headers=cost_tablecolumn>0.00</td>
+                            <td headers=refundamount_tablecolumn>0.00</td>
+                            <td headers=purchasetotal_tablecolumn>0.00</td>
+                            <td headers=totalinvestedvalue_tablecolumn>-1.00</td>
+                            <td headers=estimatedvalue_tablecolumn>3000.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=4)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=4)}>Edit</a></td>
                         </tr>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan=10 scope=col></th>
+                            <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>
+                            <th colspan=5 scope=col></th>
+                        </tr>
+                        <tr>
+                            <td colspan=10></td>
+                            <td colspan=1 headers=footerTotalSpent_tablecolumn>24993.00</td>
+                            <td colspan=5></td>
+                        </tr>
+                    </tfoot>
                 </table>
                 """)
 
@@ -379,7 +391,7 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=cost_tablecolumn>1</td>
                         <td headers=refundamount_tablecolumn>10</td>
                         <td headers=purchasetotal_tablecolumn>-7</td>
-                        <td headers=totalinvestedvalue_tablecolumn>6501.0</td>
+                        <td headers=totalinvestedvalue_tablecolumn>6501</td>
                         <td headers=estimatedvalue_tablecolumn>0</td>
                         <td headers=additionalnotes_tablecolumn>test</td>
                     </tr>                        
@@ -425,12 +437,12 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=incarkey_tablecolumn>1</td>
                         <td headers=source_tablecolumn>store</td>
                         <td headers=itemname_tablecolumn>engine</td>
-                        <td headers=taxespaid_tablecolumn>100</td>
-                        <td headers=shippingcost_tablecolumn>100</td>
-                        <td headers=cost_tablecolumn>1000</td>
-                        <td headers=refundamount_tablecolumn>0</td>
-                        <td headers=purchasetotal_tablecolumn>1200</td>
-                        <td headers=estimatedvalue_tablecolumn>1000</td>
+                        <td headers=taxespaid_tablecolumn>100.00</td>
+                        <td headers=shippingcost_tablecolumn>100.00</td>
+                        <td headers=cost_tablecolumn>1000.00</td>
+                        <td headers=refundamount_tablecolumn>0.00</td>
+                        <td headers=purchasetotal_tablecolumn>1200.00</td>
+                        <td headers=estimatedvalue_tablecolumn>1000.00</td>
                         <td headers=additionalnotes_tablecolumn></td>
                     </tr>              
                     <tr>
@@ -438,11 +450,11 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=incarkey_tablecolumn>1</td>
                         <td headers=source_tablecolumn>store</td>
                         <td headers=itemname_tablecolumn>alternator</td>
-                        <td headers=taxespaid_tablecolumn>10</td>
-                        <td headers=shippingcost_tablecolumn>5</td>
-                        <td headers=cost_tablecolumn>75</td>
-                        <td headers=refundamount_tablecolumn>10</td>
-                        <td headers=purchasetotal_tablecolumn>80</td>
+                        <td headers=taxespaid_tablecolumn>10.00</td>
+                        <td headers=shippingcost_tablecolumn>5.00</td>
+                        <td headers=cost_tablecolumn>75.00</td>
+                        <td headers=refundamount_tablecolumn>10.00</td>
+                        <td headers=purchasetotal_tablecolumn>80.00</td>
                         <td headers=estimatedvalue_tablecolumn>N/A</td>
                         <td headers=additionalnotes_tablecolumn></td>
                     </tr>              
@@ -451,11 +463,11 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=incarkey_tablecolumn>1</td>
                         <td headers=source_tablecolumn>store</td>
                         <td headers=itemname_tablecolumn>spark plug</td>
-                        <td headers=taxespaid_tablecolumn>23</td>
-                        <td headers=shippingcost_tablecolumn>34</td>
-                        <td headers=cost_tablecolumn>12</td>
-                        <td headers=refundamount_tablecolumn>45</td>
-                        <td headers=purchasetotal_tablecolumn>24</td>
+                        <td headers=taxespaid_tablecolumn>23.00</td>
+                        <td headers=shippingcost_tablecolumn>34.00</td>
+                        <td headers=cost_tablecolumn>12.00</td>
+                        <td headers=refundamount_tablecolumn>45.00</td>
+                        <td headers=purchasetotal_tablecolumn>24.00</td>
                         <td headers=estimatedvalue_tablecolumn>N/A</td>
                         <td headers=additionalnotes_tablecolumn></td>
                     </tr>              
@@ -464,12 +476,12 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=incarkey_tablecolumn>1</td>
                         <td headers=source_tablecolumn>store</td>
                         <td headers=itemname_tablecolumn>tire</td>
-                        <td headers=taxespaid_tablecolumn>23</td>
-                        <td headers=shippingcost_tablecolumn>34</td>
-                        <td headers=cost_tablecolumn>12</td>
-                        <td headers=refundamount_tablecolumn>45</td>
-                        <td headers=purchasetotal_tablecolumn>24</td>
-                        <td headers=estimatedvalue_tablecolumn>123</td>
+                        <td headers=taxespaid_tablecolumn>23.00</td>
+                        <td headers=shippingcost_tablecolumn>34.00</td>
+                        <td headers=cost_tablecolumn>12.00</td>
+                        <td headers=refundamount_tablecolumn>45.00</td>
+                        <td headers=purchasetotal_tablecolumn>24.00</td>
+                        <td headers=estimatedvalue_tablecolumn>123.00</td>
                         <td headers=additionalnotes_tablecolumn></td>
                     </tr>              
                     <tr>
@@ -477,15 +489,27 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=incarkey_tablecolumn>1</td>
                         <td headers=source_tablecolumn>store</td>
                         <td headers=itemname_tablecolumn>stereo</td>
-                        <td headers=taxespaid_tablecolumn>15</td>
-                        <td headers=shippingcost_tablecolumn>15</td>
-                        <td headers=cost_tablecolumn>150</td>
-                        <td headers=refundamount_tablecolumn>0</td>
-                        <td headers=purchasetotal_tablecolumn>180</td>
-                        <td headers=estimatedvalue_tablecolumn>6</td>
+                        <td headers=taxespaid_tablecolumn>15.00</td>
+                        <td headers=shippingcost_tablecolumn>15.00</td>
+                        <td headers=cost_tablecolumn>150.00</td>
+                        <td headers=refundamount_tablecolumn>0.00</td>
+                        <td headers=purchasetotal_tablecolumn>180.00</td>
+                        <td headers=estimatedvalue_tablecolumn>6.00</td>
                         <td headers=additionalnotes_tablecolumn></td>
                     </tr>              
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan=8 scope=col></th>
+                        <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>
+                        <th colspan=2 scope=col></th>
+                    </tr>
+                    <tr>
+                        <td colspan=8></td>
+                        <td colspan=1 headers=footerTotalSpent_tablecolumn>1508.00</td>
+                        <td colspan=2></td>
+                    </tr>
+                </tfoot>
             </table>
             """)
 
@@ -578,83 +602,95 @@ class CWIFlaskAppTests(baseTestSuite):
                                         <td headers=workeffortkey_tablecolumn>1</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2021-09-12</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>2</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2022-10-07</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>3</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2021-09-14</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>4</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2023-05-12</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>5</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2023-12-31</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>6</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2021-01-01</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>7</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2022-04-13</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>8</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2024-02-29</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>9</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2024-02-01</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                     <tr>
                                         <td headers=workeffortkey_tablecolumn>10</td>
                                         <td headers=carkeyworkedon_tablecolumn>1</td>
                                         <td headers=workeffortdate_tablecolumn>2022-07-31</td>
-                                        <td headers=laborhours_tablecolumn>10</td>
-                                        <td headers=estimatedpay_tablecolumn>500</td>
+                                        <td headers=laborhours_tablecolumn>10.00</td>
+                                        <td headers=estimatedpay_tablecolumn>500.00</td>
                                         <td headers=worktype_tablecolumn>engine work</td>
                                     </tr>
                                 </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan=4 scope=col></th>
+                                        <th colspan=1 scope=col id=footerTotalPay_tablecolumn>Total Pay (USD)</th>
+                                        <th colspan=1 scope=col></th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan=4></td>
+                                        <td colspan=1 headers=footerTotalPay_tablecolumn>5000.00</td>
+                                        <td colspan=1></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </td>
                     </tr>
