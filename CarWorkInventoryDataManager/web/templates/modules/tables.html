@@ -1,4 +1,6 @@
-{% macro displayResults(tableName, sqlresults) %}
+{% set _decimalFormatString = "{0:0.{1}f}" %}
+
+{% macro displayResults(tableName, sqlresults, nestRowThreshold=0) %}
     {# Generates a HTML table representing the provided SQL Query results: sqlresults
        The styling of the table is dynamically configured on a per-column basis as determined by the ColumnWebAttributes object associated with each column #}
 
@@ -52,7 +54,7 @@
                     {{columnAttributes.urlData[1] if not value else value }}
                 </a>
             {% else %}
-                {{"{0:0.{1}f}".format(value, columnAttributes.decimalPlaces) if value is number else value}}
+                {{_decimalFormatString.format(value, columnAttributes.decimalPlaces) if value is number else (value if columnAttributes.default[0] != value else columnAttributes.default[1])}}
             {% endif %}
         </td>
     {% endmacro %}
@@ -79,7 +81,7 @@
                                         {% if isHeaderRow %}
                                             {{textMap[footerHeaderTextMapKey] if footerHeaderTextMapKey}}
                                         {% else %}
-                                            {{"{0:0.{1}f}".format(tableSqlResultData | sum(attribute=footerColumnName), footerColumnAttributes.decimalPlaces) if footerColumnName}}
+                                            {{_decimalFormatString.format(tableSqlResultData | sum(attribute=footerColumnName), footerColumnAttributes.decimalPlaces) if footerColumnName}}
                                         {% endif %}
                                     </{{cellElementTag}}>
                                 {% endfor %}
@@ -101,7 +103,7 @@
             {{ generateTableHeadersFromColumnList(nestedOnColumnNameAttributes) }}
 
             <tbody>
-                {% for groupColumnKeyDict, group in sqlResultData | groupSqlResultsByColumns(nestedOnColumnNameAttributes.columnNames) %}
+                {% for groupColumnKeyDict, group in sqlResultData | groupSqlResultsByColumns(nestedOnColumnNameAttributes.columnNames) if nestRowThreshold <= 0 or (nestRowThreshold > 0 and group | length > nestRowThreshold) %}
                     <tr>
                         {# Generate table columns for all the sql columns we used to generate the nested data #}
                         {# In the case of no isNestColumn = true columns, this will serve to generate a regular table #}
@@ -129,6 +131,8 @@
                             </td>
                         {% endif %}
                     </tr>
+                {% else %}
+                    <tr><td colspan={{(nestedOnColumnNameAttributes | length) + (1 if nestedOnColumnNameAttributes.nestColumnExists() else 0)}}>No Results.</td></tr>
                 {% endfor %}
             </tbody>
             {{generateTotalFooter(nestedOnColumnNameAttributes, sqlResultData, isParentTable=hasNestedTable)}}

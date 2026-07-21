@@ -1,0 +1,16 @@
+table, td, th {border: 2px solid gray;
+               white-space: nowrap;
+               width: fit-content;}
+
+table {border-collapse: collapse;}
+
+fieldset {max-inline-size: fit-content;}
+
+.tableFormLabel {
+  position: absolute;
+  left:     -10000px;
+  top:      auto;
+  width:    1px;
+  height:   1px;
+  overflow: hidden;
+}

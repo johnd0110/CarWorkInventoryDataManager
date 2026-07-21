@@ -1,5 +1,5 @@
 # External Libraries or built-in Python libraries
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, redirect, url_for
 
 # Modules / packages in this project
 from tableConfig import setCarsWithViewEditLinksTableAndInputConfig, setEmployeesTableConfig
@@ -38,12 +38,4 @@ def main_page_post():
         case _:
             raise NotImplementedError
 
-    carsqlresult = sqlapp.getCarsWithViewEditLinksAndTotalValue()
-    setCarsWithViewEditLinksTableAndInputConfig(carsqlresult[1])
-
-    employeessqlresult = sqlapp.getEmployees()
-    setEmployeesTableConfig(employeessqlresult[1])
-
-    return render_template("index.html",
-                           carssqlres=carsqlresult,
-                           employeessqlres=employeessqlresult)
+    return redirect(url_for('web_home.main_page'))

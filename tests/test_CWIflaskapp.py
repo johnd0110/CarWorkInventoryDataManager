@@ -227,54 +227,43 @@ class CWIFlaskAppTests(baseTestSuite):
         HOME_URL = '/'
         self.clientResponseHtmlTester(HOME_URL, f"""
         <form method="post" autocomplete="off" id=cars_form>
-            <fieldset>
+            <fieldset form=cars_form>
                 <legend> Add New Entry </legend>
                 
                 <label for=make_input> Make </label>
-                <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=make_input name=make required/>
+                <input type=text form=cars_form spellcheck="true" autocomplete="on" id=make_input name=make required/>
                 <br/>
                 <label for=model_input> Model </label>
-                <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=model_input name=model required/>
+                <input type=text form=cars_form spellcheck="true" autocomplete="on" id=model_input name=model required/>
                 <br/>
                 <label for=year_input> Year </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=1970 max=9999 step=1 id=year_input name=year required/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=1970 max=9999 step=1 id=year_input name=year required/>
                 <br/>
                 <label for=enginetype_input> Engine Type </label>
-                <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=enginetype_input name=enginetype required/>       
+                <input type=text form=cars_form spellcheck="true" autocomplete="on" id=enginetype_input name=enginetype required/>       
                 <br/>
                 <label for=mileage_input> Mileage </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=None id=mileage_input name=mileage required/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=0 max=None step=None id=mileage_input name=mileage required/>
                 <br/>
                 <label for=taxespaid_input> Taxes Paid (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=taxespaid_input name=taxespaid required/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=taxespaid_input name=taxespaid required/>
                 <br/>
                 <label for=shippingcost_input> Shipping Cost (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=shippingcost_input name=shippingcost required/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=shippingcost_input name=shippingcost required/>
                 <br/>
                 <label for=cost_input> Cost (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=None max=None step=0.01 id=cost_input name=cost required/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=None max=None step=0.01 id=cost_input name=cost required/>
                 <br/>
                 <label for=refundamount_input> Amount Refunded (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=refundamount_input name=refundamount required/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=refundamount_input name=refundamount required/>
                 <br/>
                 <label for=estimatedvalue_input> Estimated Actual Value (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=estimatedvalue_input name=estimatedvalue/>
+                <input type=number form=cars_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=estimatedvalue_input name=estimatedvalue/>
                 <br/>
                 <label for=additionalnotes_input> Additional Notes </label>
+                <textarea form=cars_form id=additionalnotes_input name=additionalnotes spellcheck="true" autocomplete="on" wrap=soft></textarea>
                 <br/>
-                <textarea id=additionalnotes_input name=additionalnotes spellcheck="true" autocomplete="on" wrap=soft></textarea>
-                <br/>
-                <button type="submit"> Submit </button>
+                <button type="submit" name="submit"> Submit </button>
                 <input type="hidden" id=cars_form name="formid" value=cars_form>
             </fieldset>
         </form>
@@ -327,14 +316,13 @@ class CWIFlaskAppTests(baseTestSuite):
         HOME_URL = '/'
         self.clientResponseHtmlTester(HOME_URL, f"""
         <form method="post" autocomplete="off" id=employees_form>
-            <fieldset>
+            <fieldset form=employees_form>
                 <legend> Add New Entry </legend>
 
                 <label for=employeename_input> Employee Name </label>
+                <input type=text form=employees_form spellcheck="true" autocomplete="on" id=employeename_input name=employeename required/>
                 <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=employeename_input name=employeename required/>
-                <br/>
-                <button type="submit"> Submit </button>
+                <button type="submit" name="submit"> Submit </button>
                 <input type="hidden" id=employees_form name="formid" value=employees_form>
             </fieldset>
         </form>
@@ -386,13 +374,13 @@ class CWIFlaskAppTests(baseTestSuite):
                         <td headers=year_tablecolumn>2012</td>
                         <td headers=enginetype_tablecolumn>test</td>
                         <td headers=mileage_tablecolumn>50000</td>
-                        <td headers=taxespaid_tablecolumn>1</td>
-                        <td headers=shippingcost_tablecolumn>1</td>
-                        <td headers=cost_tablecolumn>1</td>
-                        <td headers=refundamount_tablecolumn>10</td>
-                        <td headers=purchasetotal_tablecolumn>-7</td>
-                        <td headers=totalinvestedvalue_tablecolumn>6501</td>
-                        <td headers=estimatedvalue_tablecolumn>0</td>
+                        <td headers=taxespaid_tablecolumn>1.00</td>
+                        <td headers=shippingcost_tablecolumn>1.00</td>
+                        <td headers=cost_tablecolumn>1.00</td>
+                        <td headers=refundamount_tablecolumn>10.00</td>
+                        <td headers=purchasetotal_tablecolumn>-7.00</td>
+                        <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
+                        <td headers=estimatedvalue_tablecolumn>0.00</td>
                         <td headers=additionalnotes_tablecolumn>test</td>
                     </tr>                        
                 </tbody>
@@ -517,42 +505,34 @@ class CWIFlaskAppTests(baseTestSuite):
         VIEW_CAR_KEY_1_URL = '/car/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
         <form method="post" autocomplete="off" id=items_form>
-            <fieldset>
+            <fieldset form=items_form>
                 <legend> Add New Entry </legend>
 
                 <label for=source_input> Item Source </label>
-                <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=source_input name=source required/>
+                <input type=text form=items_form spellcheck="true" autocomplete="on" id=source_input name=source required/>
                 <br/>
                 <label for=itemname_input> Item Name </label>
-                <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=itemname_input name=itemname required/>
+                <input type=text form=items_form spellcheck="true" autocomplete="on" id=itemname_input name=itemname required/>
                 <br/>
                 <label for=taxespaid_input> Taxes Paid (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=taxespaid_input name=taxespaid required/>
+                <input type=number form=items_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=taxespaid_input name=taxespaid required/>
                 <br/>
                 <label for=shippingcost_input> Shipping Cost (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=shippingcost_input name=shippingcost required/>
+                <input type=number form=items_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=shippingcost_input name=shippingcost required/>
                 <br/>
                 <label for=cost_input> Cost (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=None max=None step=0.01 id=cost_input name=cost required/>
+                <input type=number form=items_form spellcheck="true" autocomplete="on" min=None max=None step=0.01 id=cost_input name=cost required/>
                 <br/>
                 <label for=refundamount_input> Amount Refunded (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=refundamount_input name=refundamount required/>
+                <input type=number form=items_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=refundamount_input name=refundamount required/>
                 <br/>
                 <label for=estimatedvalue_input> Estimated Actual Value (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=estimatedvalue_input name=estimatedvalue/>
+                <input type=number form=items_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=estimatedvalue_input name=estimatedvalue/>
                 <br/>
                 <label for=additionalnotes_input> Additional Notes </label>
+                <textarea form=items_form id=additionalnotes_input name=additionalnotes spellcheck="true" autocomplete="on" wrap=soft ></textarea>
                 <br/>
-                <textarea id=additionalnotes_input name=additionalnotes spellcheck="true" autocomplete="on" wrap=soft ></textarea>
-                <br/>
-                <button type="submit"> Submit </button>
+                <button type="submit" name="submit"> Submit </button>
                 <input type="hidden" id=items_form name="formid" value=items_form>
             </fieldset>
         </form>
@@ -702,12 +682,11 @@ class CWIFlaskAppTests(baseTestSuite):
         VIEW_CAR_KEY_1_URL = '/car/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
         <form method="post" autocomplete="off" id=workefforts_form>
-            <fieldset>
+            <fieldset form=workefforts_form>
                 <legend> Add New Entry </legend>
 
                 <label for=employeename_input> Employee Name </label>
-                <br/>
-                <select id=employeename_input name=employeeKey required>
+                <select form=workefforts_form id=employeename_input name=employeeKey required>
                     <option value=1> bob </option>
                     <option value=2> joe </option>
                     <option value=3> james </option>
@@ -717,22 +696,18 @@ class CWIFlaskAppTests(baseTestSuite):
                 </select>
                 <br/>
                 <label for=workeffortdate_input> Work Effort Date </label>
-                <br/>
-                <input type=date spellcheck="true" autocomplete="on" min=1970-01-01 max=9999-12-31 step=1 id=workeffortdate_input name=workeffortdate required/>
+                <input type=date form=workefforts_form spellcheck="true" autocomplete="on" min=1970-01-01 max=9999-12-31 step=1 id=workeffortdate_input name=workeffortdate required/>
                 <br/>
                 <label for=laborhours_input> Labor Hours </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=24 step=0.01 id=laborhours_input name=laborhours required/>
+                <input type=number form=workefforts_form spellcheck="true" autocomplete="on" min=0 max=24 step=0.01 id=laborhours_input name=laborhours required/>
                 <br/>
                 <label for=estimatedpay_input> Estimated Pay (USD) </label>
-                <br/>
-                <input type=number spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=estimatedpay_input name=estimatedpay required/>
+                <input type=number form=workefforts_form spellcheck="true" autocomplete="on" min=0 max=None step=0.01 id=estimatedpay_input name=estimatedpay required/>
                 <br/>
                 <label for=worktype_input> Work Type </label>
+                <input type=text form=workefforts_form spellcheck="true" autocomplete="on" id=worktype_input name=worktype required/>
                 <br/>
-                <input type=text spellcheck="true" autocomplete="on" id=worktype_input name=worktype required/>
-                <br/>
-                <button type="submit"> Submit </button>
+                <button type="submit" name="submit"> Submit </button>
                 <input type="hidden" id=workefforts_form name="formid" value=workefforts_form>
             </fieldset>
         </form>

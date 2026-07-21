@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, redirect, url_for, request
 
 from conversion_helper import item
 # Modules / packages in this project
-from tableConfig import setWorkEffortsByCarWithEmployeesTableAndInputConfig, setItemsTableAndInputConfig, setCarsTableAndInputConfig
+from tableConfig import setWorkEffortsByCarWithEmployeesTableAndInputConfig, setItemsTableAndInputConfig, setCarsTableAndInputConfig, setCarsTableConfig, setPurchasesTableConfig, setValueEstimatesTableConfig, setItemGroupTransactionTableAndInputConfig
 from db import get_CWI_db
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
 
@@ -11,48 +11,97 @@ web_car = Blueprint('web_car', __name__, url_prefix='/car')
 
 @web_car.route('/<int:keyorid>')
 def car_page(keyorid):
-    #TODO: Set up item group transaction tables and fields
     sqlapp = get_CWI_db()
 
-    itemssqlresult = sqlapp.getItemsForCar(keyorid)
+    carssqlres = sqlapp.getCarById(keyorid)
+    setCarsTableConfig(carssqlres[1])
+    setPurchasesTableConfig(carssqlres[1], includeFooter=False)
+    setValueEstimatesTableConfig(carssqlres[1])
 
+    itemssqlresult = sqlapp.getItemsForCar(keyorid)
     setItemsTableAndInputConfig(itemssqlresult[1])
+
+    igtsqlres = sqlapp.getItemsAndItemGroupTransactionsForCar(keyorid)
+    setItemGroupTransactionTableAndInputConfig(igtsqlres[1])
 
     workeffortssqlresults = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
     setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
                                                         sqlapp.getEmployees()[0])
 
     return render_template("car_view.html",
-                           carssqlres=sqlapp.getCarById(keyorid),
+                           carssqlres=carssqlres,
                            itemssqlres=itemssqlresult,
+                           igtsqlres=igtsqlres,
                            workeffortssqlres=workeffortssqlresults)
 
 @web_car.post('/<int:keyorid>')
 def car_page_post(keyorid):
     sqlapp = get_CWI_db()
 
+    igtFormTablePreFillData = []
     match request.form["formid"].lower():
         case "items_form":
             req_form_dict = lowerCaseKeyDict(request.form)
             req_form_dict['incarkey'] = keyorid
-            _ = sqlapp.insertItem(req_form_dict)
+            req_form_dict['itemgroupdescription'] = ""
+            _ = sqlapp.insertSingleItem(req_form_dict)
+            return redirect(url_for('web_car.car_page', keyorid=keyorid))
         case "workefforts_form":
-            req_form_dict = lowerCaseKeyDict(request.form)
+            req_form_dict = lowerCaseKeyDict(request.form.g)
             req_form_dict['carKeyWorkedOn'] = keyorid
             _ = sqlapp.insertWorkEffort(req_form_dict)
+            return redirect(url_for('web_car.car_page', keyorid=keyorid))
+        case "igt_form":
+            req_form_dict = lowerCaseKeyDict(request.form.to_dict(flat=False))
+            tableData = []
+            print(req_form_dict)
+            for columnName, valueList in req_form_dict.items():
+                if columnName in ('addnewrow', 'formid'):
+                    continue
+
+                for index, value in enumerate(valueList):
+                    if len(tableData) <= index:
+                        tableData.append(lowerCaseKeyDict({columnName: value}))
+                    else:
+                        if columnName in tableData[index]:
+                            raise ValueError(
+                                f"Unexpected Error: {columnName} already exists at row dictionary index: {index}")
+                        tableData[index][columnName] = value
+
+            if 'addnewrow' in req_form_dict:
+                igtFormTablePreFillData = tableData
+            elif 'submit' in req_form_dict:
+                for itemDict in tableData:
+                    itemDict['incarkey'] = keyorid
+
+                _ = sqlapp.insertMultipleItems(tableData)
+                return redirect(url_for('web_car.car_page', keyorid=keyorid))
+            else:
+                raise NotImplementedError
         case _:
             raise NotImplementedError
+
+    carssqlres = sqlapp.getCarById(keyorid)
+    setCarsTableConfig(carssqlres[1])
+    setPurchasesTableConfig(carssqlres[1], includeFooter=False)
+    setValueEstimatesTableConfig(carssqlres[1])
+
     itemssqlresult = sqlapp.getItemsForCar(keyorid)
     setItemsTableAndInputConfig(itemssqlresult[1])
+
+    igtsqlres = sqlapp.getItemsAndItemGroupTransactionsForCar(keyorid)
+    setItemGroupTransactionTableAndInputConfig(igtsqlres[1])
 
     workeffortssqlresults = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
     setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
                                                         sqlapp.getEmployees()[0])
 
     return render_template("car_view.html",
-                           carssqlres=sqlapp.getCarById(keyorid),
+                           carssqlres=carssqlres,
                            itemssqlres=itemssqlresult,
-                           workeffortssqlres=workeffortssqlresults)
+                           igtsqlres=igtsqlres,
+                           workeffortssqlres=workeffortssqlresults,
+                           igtFormTablePreFillData=igtFormTablePreFillData)
 
 @web_car.route('/edit/<int:keyorid>')
 def car_edit_page(keyorid):
@@ -61,7 +110,7 @@ def car_edit_page(keyorid):
     sqlapp = get_CWI_db()
 
     carsSqlResult = sqlapp.getCarById(keyorid)
-    setCarsTableAndInputConfig(carsSqlResult[1])
+    setCarsTableAndInputConfig(carsSqlResult[1], includeFooter=False)
 
     return render_template("car_view.html",
                            carssqlres=carsSqlResult)

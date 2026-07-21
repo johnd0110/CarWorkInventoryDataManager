@@ -4,8 +4,8 @@
 
 {% block main %}
     {{ tables.displayResults('cars', carssqlres) }}
-    {{ forms.generateTableForm('cars', carssqlres[1]) }}
+    {{ forms.generateStandardEntryForm('cars', carssqlres[1]) }}
 
     {{ tables.displayResults('employees', employeessqlres) }}
-    {{ forms.generateTableForm('employees', employeessqlres[1]) }}
+    {{ forms.generateStandardEntryForm('employees', employeessqlres[1]) }}
 {% endblock %}

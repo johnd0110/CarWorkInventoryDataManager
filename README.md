@@ -62,7 +62,7 @@ It allows for recording of cars, the items purchased and used for a particular c
   - `initDb`
     - Rebuilds database schema using `sql/schema/schema.sql` and prints out the entire schema after it is done.
       - **<ins>WARNING: DELETES ALL EXISTING DATA</ins>**
-## Setup Instructions:
+## Setup Instructions
 ### Dependencies:
 - Python >= 3.14
 - Flask >= 3.1.3 + Dependencies

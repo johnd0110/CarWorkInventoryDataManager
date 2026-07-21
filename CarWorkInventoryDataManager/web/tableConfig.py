@@ -1,7 +1,10 @@
 from CarWorkInventoryDataManager.sql.SQL_CONSTANTS import MIN_SQL_YEAR, MAX_SQL_YEAR, MINIMUM_SQL_DATE, MAXIMUM_SQL_DATE
 from datastructures.htmlEnums import InputTypes
 
-def setCarsTableAndInputConfig(carsSqlResult):
+def setCarsTableConfig(carsSqlResult):
+    carsSqlResult["totalInvestedValue"].decimalPlaces = 2
+
+def setCarsInputConfig(carsSqlResult):
     carsSqlResult["make"].InputType = InputTypes.TEXT.value
     carsSqlResult["make"].requiredInput = True
 
@@ -21,9 +24,12 @@ def setCarsTableAndInputConfig(carsSqlResult):
 
     carsSqlResult["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
-    carsSqlResult["totalInvestedValue"].decimalPlaces = 2
+def setCarsTableAndInputConfig(carsSqlResult, includeFooter=True):
+    setCarsInputConfig(carsSqlResult)
 
-    setPurchasesTableAndInputConfig(carsSqlResult)
+    setCarsTableConfig(carsSqlResult)
+
+    setPurchasesTableAndInputConfig(carsSqlResult, includeFooter)
 
     setValueEstimatesTableAndInputConfig(carsSqlResult)
 
@@ -37,9 +43,23 @@ def setCarsWithViewEditLinksTableAndInputConfig(carsSqlResult):
     carsSqlResult["editLink"].urlData = ('web_car.car_edit_page', 'Edit', 'carKey')
 
 def setEmployeesTableConfig(employeesSqlResult):
-
     employeesSqlResult["employeeName"].InputType = InputTypes.TEXT.value
     employeesSqlResult["employeeName"].requiredInput = True
+
+def setItemGroupTransactionTableConfig(igtsqlCNA):
+    igtsqlCNA["itemGroupTransactionKey"].isNestColumn = True
+
+    igtsqlCNA["itemGroupDescription"].isNestColumn = True
+
+
+def setItemGroupTransactionTableAndInputConfig(igtsqlCNA):
+    setItemGroupTransactionTableConfig(igtsqlCNA)
+
+    igtsqlCNA["itemGroupDescription"].InputType = InputTypes.TEXTAREA.value
+    igtsqlCNA["itemGroupDescription"].requiredInput = True
+    igtsqlCNA["itemGroupDescription"].isGroupInput = True
+
+    setItemsTableAndInputConfig(igtsqlCNA)
 
 def setItemsTableAndInputConfig(itemssqlCNA):
     itemssqlCNA["source"].InputType = InputTypes.TEXT.value
@@ -50,40 +70,62 @@ def setItemsTableAndInputConfig(itemssqlCNA):
 
     itemssqlCNA["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
-    #TODO: Configure item group description fields
     setPurchasesTableAndInputConfig(itemssqlCNA)
 
     setValueEstimatesTableAndInputConfig(itemssqlCNA)
 
-def setValueEstimatesTableAndInputConfig(sqlCNA):
+def setValueEstimatesTableConfig(sqlCNA):
+    sqlCNA["estimatedValue"].decimalPlaces = 2
+    sqlCNA["estimatedValue"].default = (None, "N/A")
+
+def setValueEstimatesInputConfig(sqlCNA):
     sqlCNA["estimatedValue"].InputType = InputTypes.NUMBER.value
     sqlCNA["estimatedValue"].requiredInput = False
     sqlCNA["estimatedValue"].MinMaxStep = ("0", None, "0.01")
-    sqlCNA["estimatedValue"].decimalPlaces = 2
 
-def setPurchasesTableAndInputConfig(sqlCNA):
+def setValueEstimatesTableAndInputConfig(sqlCNA):
+    setValueEstimatesTableConfig(sqlCNA)
+
+    setValueEstimatesInputConfig(sqlCNA)
+
+def setPurchasesTableConfig(sqlCNA, includeFooter=True):
+    sqlCNA["taxesPaid"].decimalPlaces = 2
+
+    sqlCNA["shippingCost"].decimalPlaces = 2
+
+    sqlCNA["cost"].decimalPlaces = 2
+
+    sqlCNA["refundAmount"].decimalPlaces = 2
+
+    if includeFooter:
+        sqlCNA["purchaseTotal"].footerTotalTextMapKey = "footerTotalSpent"
+
+    sqlCNA["purchaseTotal"].decimalPlaces = 2
+
+def setPurchasesInputConfig(sqlCNA):
     sqlCNA["taxesPaid"].InputType = InputTypes.NUMBER.value
     sqlCNA["taxesPaid"].requiredInput = True
     sqlCNA["taxesPaid"].MinMaxStep = ("0", None, "0.01")
-    sqlCNA["taxesPaid"].decimalPlaces = 2
+
 
     sqlCNA["shippingCost"].InputType = InputTypes.NUMBER.value
     sqlCNA["shippingCost"].requiredInput = True
     sqlCNA["shippingCost"].MinMaxStep = ("0", None, "0.01")
-    sqlCNA["shippingCost"].decimalPlaces = 2
+
 
     sqlCNA["cost"].InputType = InputTypes.NUMBER.value
     sqlCNA["cost"].requiredInput = True
     sqlCNA["cost"].MinMaxStep = (None, None, "0.01")
-    sqlCNA["cost"].decimalPlaces = 2
+
 
     sqlCNA["refundAmount"].InputType = InputTypes.NUMBER.value
     sqlCNA["refundAmount"].requiredInput = True
     sqlCNA["refundAmount"].MinMaxStep = ("0", None, "0.01")
-    sqlCNA["refundAmount"].decimalPlaces = 2
 
-    sqlCNA["purchaseTotal"].footerTotalTextMapKey = "footerTotalSpent"
-    sqlCNA["purchaseTotal"].decimalPlaces = 2
+def setPurchasesTableAndInputConfig(sqlCNA, includeFooter=True):
+    setPurchasesTableConfig(sqlCNA, includeFooter)
+
+    setPurchasesInputConfig(sqlCNA)
 
 def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, employeessqldata):
     workeffortssqlCNA["employeeKey"].isNestColumn = True
@@ -96,6 +138,7 @@ def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, emplo
     workeffortssqlCNA["workEffortDate"].InputType = InputTypes.DATE.value
     workeffortssqlCNA["workEffortDate"].requiredInput = True
     workeffortssqlCNA["workEffortDate"].MinMaxStep = (str(MINIMUM_SQL_DATE.date()), str(MAXIMUM_SQL_DATE.date()), "1")
+    workeffortssqlCNA["workEffortDate"].default = (str(MAXIMUM_SQL_DATE.date()), "N/A")
 
     workeffortssqlCNA["laborHours"].InputType = InputTypes.NUMBER.value
     workeffortssqlCNA["laborHours"].requiredInput = True

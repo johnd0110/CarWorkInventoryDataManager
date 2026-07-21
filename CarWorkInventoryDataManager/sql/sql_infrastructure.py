@@ -49,6 +49,7 @@ class baseSQL:
                  nothing useful for other queries like INSERT paired with the queries' column names along with a blank slate of decorated (if at all) column names
                  UNLESS a returning clause is provided, in which case the results will be that of the returning clause
         """
+        # TODO: Implement savepoints/nested transactions to prevent data from committing to databases if a http request fails
         cursor = self.connection.cursor()
         # Non-Select statements return an empty list, otherwise select statement will return the query results as a list
         result = cursor.execute(SQLStatement, placeholderValues).fetchall() if not IsScript else cursor.executescript(SQLStatement).fetchall()

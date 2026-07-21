@@ -88,7 +88,7 @@ class CWIDatabaseTests(baseTestSuite):
         self.assertEqual(len(self.db.insertCar(lowerCaseKeyDict({'make': 'toyota', 'model': 'camry', 'year': 2010, 'enginetype': 'v9', 'mileage': 12345, 'cost': 12345, 'taxespaid': 1, 'shippingcost': 1, 'refundAmount': 0, 'estimatedvalue': 100, 'additionalnotes': ''}))[0]), 1)
 
         # Tests purchases and value estimate tables again but for items in addition to the items and item group transactions tables
-        self.assertEqual(len(self.db.insertItem(lowerCaseKeyDict({'incarkey': 1, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': 10, 'itemgroupdescription': 'test', 'source': '', 'additionalnotes': ''}))[0]), 1)
+        self.assertEqual(len(self.db.insertSingleItem(lowerCaseKeyDict({'incarkey': 1, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': 10, 'itemgroupdescription': 'test', 'source': '', 'additionalnotes': ''}))[0]), 1)
 
         self.assertEqual(len(self.db.insertEmployee(lowerCaseKeyDict({'employeename': 'jimbo'}))[0]), 1)
 
@@ -120,10 +120,10 @@ class CWIDatabaseTests(baseTestSuite):
                                                 *args)
 
         # Test car key foreign key on items table
-        insertForeignKeyConstraintTest(self.db.insertItem, lowerCaseKeyDict({'incarkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
+        insertForeignKeyConstraintTest(self.db.insertSingleItem, lowerCaseKeyDict({'incarkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
 
         # Test item group transaction foreign key on items table
-        insertForeignKeyConstraintTest(self.db.insertItem, lowerCaseKeyDict({'incarkey': 1, 'itemgrouptransactionkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
+        insertForeignKeyConstraintTest(self.db.insertSingleItem, lowerCaseKeyDict({'incarkey': 1, 'itemgrouptransactionkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
 
 
         # Test purchase foreign key on items table
@@ -139,7 +139,7 @@ class CWIDatabaseTests(baseTestSuite):
     def testCWIDbItemInsertPreventsRetroactiveLinkToPurchase(self):
         # Test that item inserts prevent linking to a pre-existing purchase key
         self.assertRaises(ValueError,
-                          self.db.insertItem,
+                          self.db.insertSingleItem,
                           lowerCaseKeyDict({'incarkey': 1, 'purchasekey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
 
     def testAuthorizerStopsDirectPurchaseHistoryInsert(self):

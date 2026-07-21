@@ -108,23 +108,30 @@ class carWorkInventorySQL(baseSQL):
                                                                    ON c.valueEstimateKey = ve.valueEstimateKey
                                                                    WHERE c.carKey = ?""",
                                             (carKey,))
+
+    @autoSetHiddenColumnsByNames(["itemGroupTransactionKey", "itemKey", "inCarKey"])
     def getItemsAndItemGroupTransactionsForCar(self, carKey) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT itg.itemGroupTransactionKey,
-                                                      itg.description as itemGroupDescription,
-                                                      itm.itemKey,
-                                                      itm.inCarKey,
-                                                      itm.source,
-                                                      itm.itemName,
-                                                      COALESCE(ve.estimatedValue, 0) as estimatedValue,
-                                                      itm.additionalNotes
-                                                      FROM itemGroupTransaction itg
-                                                      JOIN items itm 
-                                                      ON itg.itemGroupTransactionKey = itm.itemGroupTransactionKey
-                                                      JOIN Purchases p
-                                                      ON itm.purchaseKey = p.purchaseKey
-                                                      LEFT JOIN ValueEstimates ve
-                                                      ON itm.valueEstimateKey = ve.valueEstimateKey
-                                                      WHERE itm.inCarKey = ?""",
+                                                                  itg.description as itemGroupDescription,
+                                                                  itm.itemKey,
+                                                                  itm.inCarKey,
+                                                                  itm.source,
+                                                                  itm.itemName,
+                                                                  p.taxesPaid,
+                                                                  p.shippingCost,
+                                                                  p.cost,
+                                                                  p.refundAmount,
+                                                                  p.purchaseTotal,
+                                                                  COALESCE(ve.estimatedValue, 0) as estimatedValue,
+                                                                  itm.additionalNotes
+                                                                  FROM itemGroupTransactions itg
+                                                                  JOIN items itm 
+                                                                  ON itg.itemGroupTransactionKey = itm.itemGroupTransactionKey
+                                                                  JOIN Purchases p
+                                                                  ON itm.purchaseKey = p.purchaseKey
+                                                                  LEFT JOIN ValueEstimates ve
+                                                                  ON itm.valueEstimateKey = ve.valueEstimateKey
+                                                                  WHERE itm.inCarKey = ?""",
                                             (carKey,))
 
     @autoSetHiddenColumnsByNames(["itemKey", "inCarKey"])
@@ -138,14 +145,15 @@ class carWorkInventorySQL(baseSQL):
                                                                   p.cost,
                                                                   p.refundAmount,
                                                                   p.purchaseTotal,
-                                                                  COALESCE(ve.estimatedValue, 'N/A') as estimatedValue, 
+                                                                  ve.estimatedValue,
                                                                   itm.additionalNotes 
                                                                   FROM Items itm
                                                                   JOIN Purchases p
                                                                   ON itm.purchaseKey = p.purchaseKey
                                                                   LEFT JOIN ValueEstimates ve
                                                                   ON itm.valueEstimateKey = ve.valueEstimateKey 
-                                                                  WHERE itm.inCarKey = ?""", placeholderValues=(carKey,))
+                                                                  WHERE itm.inCarKey = ?""",
+                                            placeholderValues=(carKey,))
 
     @autoSetHiddenColumnsByNames(["employeeKey"])
     def getEmployees(self) -> tuple[list, columnNamesAndAttributes | None]:
@@ -238,7 +246,7 @@ class carWorkInventorySQL(baseSQL):
                                             employeeDataValues.data,
                                             False)
 
-    def insertItem(self, itemDataValues: lowerCaseKeyDict):
+    def insertSingleItem(self, itemDataValues: lowerCaseKeyDict, keepTransactionOpen: bool = False):
         if itemDataValues.get('purchaseKey') is not None:
             raise ValueError(f'Cannot insert item linked to an existing purchase key.')
 
@@ -251,8 +259,6 @@ class carWorkInventorySQL(baseSQL):
 
         # If no item group transaction key provided, then create a new one for the item,
         # otherwise just add the item with the provided item group transaction key so the link is created
-        #TODO: Consider reworking to only create an item group transaction only when more than one items are grouped
-        # instead of a item group transaction for one or more items always
         if itemDataValues.get('itemGroupTransactionKey') is None:
             self._insertItemGroupTransactionWithOpenTransaction(itemDataValues)
 
@@ -260,7 +266,21 @@ class carWorkInventorySQL(baseSQL):
                                                            VALUES (:itemgrouptransactionkey, :purchasekey, :valueestimatekey, :incarkey, :itemname, :source, :additionalnotes)
                                                            RETURNING itemKey""",
                                             itemDataValues.data,
-                                            False)
+                                            False,
+                                            keepTransactionOpen)
+
+    def insertMultipleItems(self, multiItemDataValues: list[lowerCaseKeyDict]):
+        itemGroupTransactionKey = None
+        for index, itemDataValues in enumerate(multiItemDataValues):
+            if itemGroupTransactionKey is not None:
+                itemDataValues["itemgrouptransactionkey"] = itemGroupTransactionKey
+
+            # Keep transaction open until the last item
+            # When the last item is inserted, we commit the whole transaction to the database.
+            self.insertSingleItem(itemDataValues, index < len(multiItemDataValues) - 1)
+
+            if index == 0:
+                itemGroupTransactionKey = itemDataValues["itemgrouptransactionkey"]
 
     def insertWorkEffort(self, workEffortDataValues: lowerCaseKeyDict):
         return self.CWI_executeSQLStatement("""INSERT INTO WorkEfforts(carKeyWorkedOn, employeeKey, workEffortDate, laborHours, estimatedPay, workType) 
@@ -345,7 +365,7 @@ class carWorkInventorySQL(baseSQL):
         safeParentKeyColumnName = table_name_res[0].pop('column_name')
 
         table_column_res, _ = self.executeSQLStatement(f"""SELECT *
-                                                                   FROM pragma_table_xinfo()""")
+                                                           FROM pragma_table_xinfo()""")
 
         # Get all child table names for parentTableName and the associated child key column
         child_tables_res, _ = self.executeSQLStatement("""SELECT sch.tbl_name as child_table_name, 

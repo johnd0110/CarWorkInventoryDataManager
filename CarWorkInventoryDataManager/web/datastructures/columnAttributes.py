@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
 from datastructures import VisibilityOptions, InputTypes, WrapOptions
@@ -35,6 +36,8 @@ class columnWebAttributes:
                            Doubles as an indicator for if a footer total should be calculated and shown for the column
     decimalPlaces: The number of decimal places to display the values of the column with, only applies if the values are numbers
                    Also applies to footer totals
+    default: Tuple of a value to compare and replace with default text and the default text to use
+    isGroupInput: True if the given column should only be a form input that spans an entire grouped entry (Only one input of this kind for the whole group)
     """
     dropDownData: tuple[str, list, str] = None
     visibility: str = VisibilityOptions.INITIAL.value
@@ -48,6 +51,8 @@ class columnWebAttributes:
     wrap: WrapOptions = WrapOptions.SOFT.value
     footerTotalTextMapKey: str = ""
     decimalPlaces: int = 0
+    default: tuple[Any, str] = None
+    isGroupInput: bool = False
 
     def isFooterTotalColumn(self):
         return bool(self.footerTotalTextMapKey)

@@ -20,3 +20,4 @@ totalInvestedValue, Total Invested Value (USD);
 source, Item Source;
 estimatedValue, Estimated Actual Value (USD);
 additionalNotes, Additional Notes;
+itemGroupDescription, Group Description;

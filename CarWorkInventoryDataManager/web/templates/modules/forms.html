@@ -1,40 +1,92 @@
-{% macro generateTableForm(formID, tableColumnsAndAttributes, legendText="Add New Entry") %}
+{% macro _generateInputElementFromWebAttributes(webAttributes, sqlColumnName, inputId, formId, value=none) %}
+    {% if webAttributes.InputType == InputTypes.DROPDOWN.value %}
+        {% if webAttributes.HasValidDropDownData() %}
+            {% set dropDownData = webAttributes.dropDownData %}
+            <select form={{formId}} id={{inputId}} name={{dropDownData[2]}} {{"required" if webAttributes.requiredInput}}>
+                {% for row in dropDownData[1] %}
+                    <option value={{row[dropDownData[0]]}} {{"selected" if value == row[dropDownData[0]]}}>{{row[sqlColumnName]}}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+    {% elif webAttributes.InputType == InputTypes.TEXTAREA.value %}
+        <textarea form={{formId}} id={{inputId}} name={{webAttributes.InputAlias if webAttributes.InputAlias else sqlColumnName}} spellcheck="true" autocomplete="on" wrap={{webAttributes.wrap}} {{"required" if webAttributes.requiredInput}}>{{value if value is not none and value is defined}}</textarea>
+    {% else %}
+        <input type={{webAttributes.InputType}} form={{formId}} spellcheck="true" autocomplete="on" {{"min=" ~ webAttributes.MinMaxStep[0] ~ " max=" ~ webAttributes.MinMaxStep[1] ~ " step=" ~ webAttributes.MinMaxStep[2] if webAttributes.MinMaxStep}} id={{inputId}} name={{webAttributes.InputAlias if webAttributes.InputAlias else sqlColumnName}} {{"required" if webAttributes.requiredInput}} {{"value=" ~ value if value is not none and value is defined}} />
+    {% endif %}
+{% endmacro %}
+
+{% macro _renderInputRelatedElements(columnsAndAttributes) %}
+    {% for columnName, attributes in columnsAndAttributes.items() if attributes.InputType != InputTypes.NOTINPUT.value %}
+        {% set columnId = columnName ~ "_input" %}
+        {{caller(columnName, attributes, columnId)}}
+    {% endfor %}
+{% endmacro %}
+
+{% macro _generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formID, inTable, value=none, makelabels=true)%}
+    {% if makelabels %}
+        <label for={{id}} {{"class=tableFormLabel" if inTable}}>{{textMap[columnName]}}</label>
+    {% endif %}
+    {{_generateInputElementFromWebAttributes(webAttrs, columnName, id, formID, value)}}
+{% endmacro %}
+
+{% macro generateFormForTable(formID, tableColumnsAndAttributes, legendText) %}
     {# Builds out a form which gathers data for a SQL Insert dynamically based on the provided column names and attributes object.
        Form ID determines which table to insert into (Refer to web/web_display.py for the defined Form IDs). #}
-    {% if tableColumnsAndAttributes %}
+    {% if tableColumnsAndAttributes and tableColumnsAndAttributes.HasValidInputs()%}
         {% set formID = formID ~ "_form" %}
         <form method="post" autocomplete="off" id={{formID}}>
             {# Build out the form inputs regardless, but they will be disabled if any one of the input fields have invalid configuration,
             in order to prevent a user from triggering an INSERT error and to signal an error via the UI #}
-            <fieldset {{disabled if not tableColumnsAndAttributes.HasValidInputs() }}>
+            <fieldset form={{formID}}>
                 <legend> {{legendText}} </legend>
-                {% for columnName, attributes in tableColumnsAndAttributes.items() %}
-                    {% if attributes.InputType != InputTypes.NOTINPUT.value %}
-                        {% set inputId = columnName ~ "_input" %}
-                        <label {{"for=" ~ inputId}}> {{ textMap[columnName] }} </label>
-                        <br/>
-                        {% if attributes.InputType == InputTypes.DROPDOWN.value %}
-                            {% if attributes.HasValidDropDownData() %}
-                                {% set dropDownData = attributes.dropDownData %}
-                                <select id={{inputId}} name={{dropDownData[2]}} {{"required" if attributes.requiredInput}}>
-                                    {% for row in dropDownData[1] %}
-                                        <option value={{row[dropDownData[0]]}}>{{row[columnName]}}</option>
-                                    {% endfor %}
-                                </select>
-                            {% else %}
-                                <p> Error: No Dropdown data found for dropdown input. </p>
-                            {% endif %}
-                        {% elif attributes.InputType == InputTypes.TEXTAREA.value %}
-                            <textarea id={{inputId}} name={{attributes.InputAlias if attributes.InputAlias else columnName}} spellcheck="true" autocomplete="on" wrap={{attributes.wrap}} ></textarea>
-                        {% else %}
-                            <input type={{attributes.InputType}} spellcheck="true" autocomplete="on" {{"min=" ~ attributes.MinMaxStep[0] ~ " max=" ~ attributes.MinMaxStep[1] ~ " step=" ~ attributes.MinMaxStep[2] if attributes.MinMaxStep}} id={{inputId}} name={{attributes.InputAlias if attributes.InputAlias else columnName}} {{"required" if attributes.requiredInput}} />
-                        {% endif %}
-                        <br/>
-                    {% endif %}
-                {% endfor %}
-                <button type="submit"> Submit </button>
+                {{caller(formID)}}
+                <button type="submit" name="submit"> Submit </button>
                 <input type="hidden" id={{formID}} name="formid" value={{formID}}> {# Hidden input field so that we can store an identifier for the form submission allowing us to know which table to insert into #}
             </fieldset>
         </form>
     {% endif %}
+{% endmacro %}
+
+{% macro generateStandardEntryForm(formID, tableColumnsAndAttributes, legendText="Add New Entry", prefilldata=none) %}
+    {% call(formId) generateFormForTable(formID, tableColumnsAndAttributes, legendText) %}
+        {% call(columnName, webAttrs, id) _renderInputRelatedElements(tableColumnsAndAttributes) %}
+            {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, false, value=(prefilldata[columnName] if prefilldata is not none and prefilldata is defined))}}
+            <br/>
+        {% endcall %}
+    {% endcall %}
+{% endmacro %}
+
+{% macro generateTableEntryForm(formID, tableColumnsAndAttributes, prefilltabledata) %}
+    {% call(formId) generateFormForTable(formID, tableColumnsAndAttributes, "Add Grouped Entry") %}
+        {% set tableCellIdPrefix = "_inputheader" %}
+        <table id={{formID ~ "_tableform"}}>
+            <thead>
+                <tr>
+                    {% call(columnName, webAttrs, headerId) _renderInputRelatedElements(tableColumnsAndAttributes) %}
+                        <th scope="col" id={{columnName ~ tableCellIdPrefix}}>{{textMap[columnName]}}</th>
+                    {% endcall %}
+                </tr>
+            </thead>
+            <tbody>
+                {% set tableRowSize = prefilltabledata | length + 1%}
+                {% for index in range(tableRowSize) %}
+                    <tr>
+                        {% set parentLoop = loop %}
+                        {% call(columnName, webAttrs, id) _renderInputRelatedElements(tableColumnsAndAttributes) %}
+                            {% if parentLoop.first and webAttrs.isGroupInput %}
+                                <td headers={{columnName ~ tableCellIdPrefix}} rowspan={{tableRowSize}}>
+                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefilltabledata[index][columnName] if not loop.last, loop.last)}}
+                                </td>
+                            {% elif not webAttrs.isGroupInput %}
+                                <td headers={{columnName ~ tableCellIdPrefix}}>
+                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefilltabledata[index][columnName] if not loop.last, loop.last)}}
+                                </td>
+                            {% endif %}
+                        {% endcall %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" name="AddNewRow">Add New Row</button>
+    {% endcall %}
 {% endmacro %}

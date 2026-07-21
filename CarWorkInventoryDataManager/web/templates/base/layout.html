@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <style>
-        table, td, th {border: 2px solid gray;}
-        table {border-collapse: collapse;}
-        fieldset {max-inline-size: fit-content;}
-    </style>
+    <link href={{url_for('static', filename='base.css')}} rel="stylesheet" />
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
 </head>
@@ -13,6 +9,6 @@
     {% import 'modules/tables.html' as tables with context %}
     {% import 'modules/forms.html' as forms with context %}
 
-    {% block main %}{% endblock%}
+    {% block main %}{% endblock %}
 </body>
 </html>
