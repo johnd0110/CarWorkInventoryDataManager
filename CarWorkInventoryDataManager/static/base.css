@@ -14,3 +14,29 @@ fieldset {max-inline-size: fit-content;}
   height:   1px;
   overflow: hidden;
 }
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  width: fit-content;
+  background-color: dimgray;
+}
+
+ul li a {
+  display: block;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: skyblue;
+}
+
+ul li a:hover {
+  background-color: slategray;
+}
+
+caption {
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+

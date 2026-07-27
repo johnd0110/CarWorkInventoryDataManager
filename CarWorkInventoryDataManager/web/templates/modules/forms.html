@@ -73,12 +73,8 @@
                     <tr>
                         {% set parentLoop = loop %}
                         {% call(columnName, webAttrs, id) _renderInputRelatedElements(tableColumnsAndAttributes) %}
-                            {% if parentLoop.first and webAttrs.isGroupInput %}
-                                <td headers={{columnName ~ tableCellIdPrefix}} rowspan={{tableRowSize}}>
-                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefilltabledata[index][columnName] if not loop.last, loop.last)}}
-                                </td>
-                            {% elif not webAttrs.isGroupInput %}
-                                <td headers={{columnName ~ tableCellIdPrefix}}>
+                            {% if not webAttrs.isGroupInput or (parentLoop.first and webAttrs.isGroupInput) %}
+                                <td headers={{columnName ~ tableCellIdPrefix}} {{"rowspan="~tableRowSize if parentLoop.first and webAttrs.isGroupInput}}>
                                     {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefilltabledata[index][columnName] if not loop.last, loop.last)}}
                                 </td>
                             {% endif %}

@@ -150,8 +150,8 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
                             <td headers=estimatedvalue_tablecolumn>0.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=1)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=1)}>Edit</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=1)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=1)}>Edit</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>2</td>
@@ -168,8 +168,8 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=totalinvestedvalue_tablecolumn>7866.00</td>
                             <td headers=estimatedvalue_tablecolumn>0.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=2)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=2)}>Edit</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=2)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=2)}>Edit</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>3</td>
@@ -186,8 +186,8 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=totalinvestedvalue_tablecolumn>20620.37</td>
                             <td headers=estimatedvalue_tablecolumn>50000.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=3)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=3)}>Edit</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=3)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=3)}>Edit</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>4</td>
@@ -204,8 +204,8 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=totalinvestedvalue_tablecolumn>-1.00</td>
                             <td headers=estimatedvalue_tablecolumn>3000.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_page', keyorid=4)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit_page', keyorid=4)}>Edit</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=4)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=4)}>Edit</a></td>
                         </tr>
                     </tbody>
                     <tfoot>
@@ -329,7 +329,7 @@ class CWIFlaskAppTests(baseTestSuite):
         """)
 
     def testWebCarCarsTableDisplaysWhenCarsExist(self):
-        VIEW_CAR_KEY_1_URL = '/car/1'
+        VIEW_CAR_KEY_1_URL = '/car/items/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
             <table id=singlecar_table>
                 <colgroup>
@@ -388,7 +388,7 @@ class CWIFlaskAppTests(baseTestSuite):
             """)
 
     def testWebCarItemsTableDisplaysWhenItemsExist(self):
-        VIEW_CAR_KEY_1_URL = '/car/1'
+        VIEW_CAR_KEY_1_URL = '/car/items/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
             <table id=items_table>
                 <colgroup>
@@ -502,7 +502,7 @@ class CWIFlaskAppTests(baseTestSuite):
             """)
 
     def testWebCarItemsFormExists(self):
-        VIEW_CAR_KEY_1_URL = '/car/1'
+        VIEW_CAR_KEY_1_URL = '/car/items/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
         <form method="post" autocomplete="off" id=items_form>
             <fieldset form=items_form>
@@ -539,7 +539,7 @@ class CWIFlaskAppTests(baseTestSuite):
         """)
 
     def testWebCarWorkEffortsTableDisplaysWhenWorkEffortsExist(self):
-        VIEW_CAR_KEY_1_URL = '/car/1'
+        VIEW_CAR_KEY_1_URL = '/car/items/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
             <table id=workefforts_table>
                 <colgroup>
@@ -679,7 +679,7 @@ class CWIFlaskAppTests(baseTestSuite):
             """)
 
     def testWebCarWorkEffortsFormExists(self):
-        VIEW_CAR_KEY_1_URL = '/car/1'
+        VIEW_CAR_KEY_1_URL = '/car/items/1'
         self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
         <form method="post" autocomplete="off" id=workefforts_form>
             <fieldset form=workefforts_form>

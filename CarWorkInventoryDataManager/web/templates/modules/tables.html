@@ -1,10 +1,8 @@
 {% set _decimalFormatString = "{0:0.{1}f}" %}
 
-{% macro displayResults(tableName, sqlresults, nestRowThreshold=0) %}
+{% macro displayResults(tableName, sqlresults, nestRowThreshold=0, captiontext="") %}
     {# Generates a HTML table representing the provided SQL Query results: sqlresults
        The styling of the table is dynamically configured on a per-column basis as determined by the ColumnWebAttributes object associated with each column #}
-
-    {# NOTE: Links/Events have not been implemented for the nested tables, may need to come back to this if it is desired #}
 
     {# Helper macros #}
     {% set tableColumnIdSuffix = "_tablecolumn" %}
@@ -63,6 +61,9 @@
     {% set sqlResultData = sqlresults[0] %}
     {% if sqlResultData %}
         <table id={{tableName}}>
+            {% if captiontext %}
+                <caption>{{captiontext}}</caption>
+            {% endif %}
             {% set tableColumns = sqlresults[1] %}
 
             {% macro generateTotalFooter(tableColumnNamesAndAttrs, tableSqlResultData, isParentTable=false) %}

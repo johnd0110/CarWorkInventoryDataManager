@@ -6,21 +6,24 @@
     <a href={{url_for('web_home.main_page')}}> Home </a>
 
     {{ tables.displayResults('singlecar', carssqlres) }}
-    {% if request.path.startswith("/car/edit") %}
+    {% set endpointViewName = request.endpoint.split(".")[-1] %}
+    {% set carkey = request.view_args['keyorid'] %}
+    {% if endpointViewName == "car_edit" %}
         {{forms.generateStandardEntryForm('edit_car', carssqlres[1], legendText="Edit Entry", prefilldata=carssqlres[0][0])}}
-    {% endif %}
+    {% else %}
+        <ul>
+            <li><a href={{url_for('web_car.car_items', keyorid=carkey)}}>Items</a></li>
+            <li><a href={{url_for('web_car.car_igt', keyorid=carkey)}}>Item groups</a></li>
+        </ul>
 
-    {% if itemssqlres %}
-        {{ tables.displayResults('items', itemssqlres) }}
-        {{ forms.generateStandardEntryForm('items', itemssqlres[1]) }}
-    {% endif %}
+        {% if endpointViewName == "car_items" %}
+            {{ tables.displayResults('items', itemssqlres) }}
+            {{ forms.generateStandardEntryForm('items', itemssqlres[1]) }}
+        {% elif endpointViewName == "car_igt" %}
+            {{ tables.displayResults('igt', igtsqlres, nestRowThreshold=1, captiontext="Item Groups i.e. Itemized Purchases | To view all items use the above Items Link") }}
+            {{ forms.generateTableEntryForm('igt', igtsqlres[1], igtFormTablePreFillData) }}
+        {% endif %}
 
-    {% if igtsqlres %}
-        {{ tables.displayResults('igt', igtsqlres, nestRowThreshold=1) }}
-        {{ forms.generateTableEntryForm('igt', igtsqlres[1], igtFormTablePreFillData) }}
-    {% endif %}
-
-    {% if workeffortssqlres %}
         {{ tables.displayResults('workefforts', workeffortssqlres) }}
         {{ forms.generateStandardEntryForm('workefforts', workeffortssqlres[1]) }}
     {% endif %}

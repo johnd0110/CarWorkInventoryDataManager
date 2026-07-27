@@ -38,4 +38,4 @@ def main_page_post():
         case _:
             raise NotImplementedError
 
-    return redirect(url_for('web_home.main_page'))
+    return redirect(url_for('.main_page'))

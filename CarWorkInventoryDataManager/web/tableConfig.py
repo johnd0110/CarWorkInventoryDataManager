@@ -37,10 +37,10 @@ def setCarsWithViewEditLinksTableAndInputConfig(carsSqlResult):
     setCarsTableAndInputConfig(carsSqlResult)
 
     carsSqlResult["viewLink"].makeTableHeader = False
-    carsSqlResult["viewLink"].urlData = ('web_car.car_page', 'View', 'carKey')
+    carsSqlResult["viewLink"].urlData = ('web_car.car_items', 'View', 'carKey')
 
     carsSqlResult["editLink"].makeTableHeader = False
-    carsSqlResult["editLink"].urlData = ('web_car.car_edit_page', 'Edit', 'carKey')
+    carsSqlResult["editLink"].urlData = ('web_car.car_edit', 'Edit', 'carKey')
 
 def setEmployeesTableConfig(employeesSqlResult):
     employeesSqlResult["employeeName"].InputType = InputTypes.TEXT.value
