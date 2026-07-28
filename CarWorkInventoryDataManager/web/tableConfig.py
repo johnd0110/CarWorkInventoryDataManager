@@ -51,7 +51,6 @@ def setItemGroupTransactionTableConfig(igtsqlCNA):
 
     igtsqlCNA["itemGroupDescription"].isNestColumn = True
 
-
 def setItemGroupTransactionTableAndInputConfig(igtsqlCNA):
     setItemGroupTransactionTableConfig(igtsqlCNA)
 
@@ -91,7 +90,7 @@ def setValueEstimatesTableAndInputConfig(sqlCNA, includeFooter=False):
 
     setValueEstimatesInputConfig(sqlCNA)
 
-def setPurchasesTableConfig(sqlCNA, includeFooter=True):
+def setGeneralPurchasesTableConfig(sqlCNA):
     sqlCNA["taxesPaid"].decimalPlaces = 2
 
     sqlCNA["shippingCost"].decimalPlaces = 2
@@ -99,6 +98,11 @@ def setPurchasesTableConfig(sqlCNA, includeFooter=True):
     sqlCNA["cost"].decimalPlaces = 2
 
     sqlCNA["refundAmount"].decimalPlaces = 2
+
+def setPurchasesTableConfig(sqlCNA, includeFooter=True):
+    setGeneralPurchasesTableConfig(sqlCNA)
+
+    setViewPurchaseHistoryLinkTableConfig(sqlCNA)
 
     if includeFooter:
         sqlCNA["purchaseTotal"].footerTotalTextMapKey = "footerTotalSpent"
@@ -156,3 +160,10 @@ def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, emplo
 
     workeffortssqlCNA["workType"].InputType = InputTypes.TEXT.value
     workeffortssqlCNA["workType"].requiredInput = True
+
+def setPurchaseHistoryTableConfig(sqlCNA):
+    setGeneralPurchasesTableConfig(sqlCNA)
+
+def setViewPurchaseHistoryLinkTableConfig(sqlCNA):
+    sqlCNA["viewPurchaseHistoryLink"].makeTableHeader = False
+    sqlCNA["viewPurchaseHistoryLink"].urlData = ('web_purchase_data.purchase_history_page', 'View Purchase History', 'purchaseKey')

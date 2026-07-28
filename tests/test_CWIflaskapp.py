@@ -103,6 +103,8 @@ class CWIFlaskAppTests(baseTestSuite):
                         <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:collapse>
+                        <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
@@ -122,6 +124,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <th scope="col" id=year_tablecolumn>Year</th>
                             <th scope="col" id=enginetype_tablecolumn>EngineType</th>
                             <th scope="col" id=mileage_tablecolumn>Mileage</th>
+                            <th scope="col" id=purchasekey_tablecolumn></th>
                             <th scope="col" id=taxespaid_tablecolumn>TaxesPaid(USD)</th>
                             <th scope="col" id=shippingcost_tablecolumn>ShippingCost(USD)</th>
                             <th scope="col" id=cost_tablecolumn>Cost(USD)</th>
@@ -132,6 +135,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <th scope="col" id=additionalnotes_tablecolumn>AdditionalNotes</th>
                             <th scope="col" id=viewlink_tablecolumn></th>
                             <th scope="col" id=editlink_tablecolumn></th>
+                            <th scope="col" id=viewpurchasehistorylink_tablecolumn></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -142,6 +146,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>2012</td>
                             <td headers=enginetype_tablecolumn>test</td>
                             <td headers=mileage_tablecolumn>50000</td>
+                            <td headers=purchasekey_tablecolumn>1</td>
                             <td headers=taxespaid_tablecolumn>1.00</td>
                             <td headers=shippingcost_tablecolumn>1.00</td>
                             <td headers=cost_tablecolumn>1.00</td>
@@ -152,6 +157,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=1)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=1)}>Edit</a></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=1)}>View Purchase History</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>2</td>
@@ -160,6 +166,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>1999</td>
                             <td headers=enginetype_tablecolumn>testtest</td>
                             <td headers=mileage_tablecolumn>1000</td>
+                            <td headers=purchasekey_tablecolumn>2</td>
                             <td headers=taxespaid_tablecolumn>0.00</td>
                             <td headers=shippingcost_tablecolumn>0.00</td>
                             <td headers=cost_tablecolumn>5000.00</td>
@@ -170,6 +177,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=2)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=2)}>Edit</a></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=2)}>View Purchase History</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>3</td>
@@ -178,6 +186,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>1969</td>
                             <td headers=enginetype_tablecolumn>V8</td>
                             <td headers=mileage_tablecolumn>100000</td>
+                            <td headers=purchasekey_tablecolumn>3</td>
                             <td headers=taxespaid_tablecolumn>0.00</td>
                             <td headers=shippingcost_tablecolumn>0.00</td>
                             <td headers=cost_tablecolumn>20000.00</td>
@@ -188,6 +197,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=3)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=3)}>Edit</a></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=3)}>View Purchase History</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>4</td>
@@ -196,6 +206,7 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=year_tablecolumn>2012</td>
                             <td headers=enginetype_tablecolumn>v9</td>
                             <td headers=mileage_tablecolumn>0</td>
+                            <td headers=purchasekey_tablecolumn>4</td>
                             <td headers=taxespaid_tablecolumn>0.00</td>
                             <td headers=shippingcost_tablecolumn>0.00</td>
                             <td headers=cost_tablecolumn>0.00</td>
@@ -206,18 +217,19 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=additionalnotes_tablecolumn>test</td>
                             <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=4)}>View</a></td>
                             <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=4)}>Edit</a></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=4)}>View Purchase History</a></td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan=10 scope=col></th>
+                            <th colspan=11 scope=col></th>
                             <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>
-                            <th colspan=5 scope=col></th>
+                            <th colspan=6 scope=col></th>
                         </tr>
                         <tr>
-                            <td colspan=10></td>
+                            <td colspan=11></td>
                             <td colspan=1 headers=footerTotalSpent_tablecolumn>24993.00</td>
-                            <td colspan=5></td>
+                            <td colspan=6></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -330,178 +342,200 @@ class CWIFlaskAppTests(baseTestSuite):
 
     def testWebCarCarsTableDisplaysWhenCarsExist(self):
         VIEW_CAR_KEY_1_URL = '/car/items/1'
-        self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
-            <table id=singlecar_table>
-                <colgroup>
-                    <col span="1" style=visibility:collapse>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th scope="col" id=carkey_tablecolumn></th>
-                        <th scope="col" id=make_tablecolumn>Make</th>
-                        <th scope="col" id=model_tablecolumn>Model</th>
-                        <th scope="col" id=year_tablecolumn>Year</th>
-                        <th scope="col" id=enginetype_tablecolumn>EngineType</th>
-                        <th scope="col" id=mileage_tablecolumn>Mileage</th>
-                        <th scope="col" id=taxespaid_tablecolumn>TaxesPaid(USD)</th>
-                        <th scope="col" id=shippingcost_tablecolumn>ShippingCost(USD)</th>
-                        <th scope="col" id=cost_tablecolumn>Cost(USD)</th>
-                        <th scope="col" id=refundamount_tablecolumn>AmountRefunded(USD)</th>
-                        <th scope="col" id=purchasetotal_tablecolumn>PurchaseTotal(USD)</th>
-                        <th scope="col" id=totalinvestedvalue_tablecolumn>TotalInvestedValue(USD)</th>
-                        <th scope="col" id=estimatedvalue_tablecolumn>EstimatedActualValue(USD)</th>
-                        <th scope="col" id=additionalnotes_tablecolumn>AdditionalNotes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td headers=carkey_tablecolumn>1</td>
-                        <td headers=make_tablecolumn>toyota</td>
-                        <td headers=model_tablecolumn>corolla</td>
-                        <td headers=year_tablecolumn>2012</td>
-                        <td headers=enginetype_tablecolumn>test</td>
-                        <td headers=mileage_tablecolumn>50000</td>
-                        <td headers=taxespaid_tablecolumn>1.00</td>
-                        <td headers=shippingcost_tablecolumn>1.00</td>
-                        <td headers=cost_tablecolumn>1.00</td>
-                        <td headers=refundamount_tablecolumn>10.00</td>
-                        <td headers=purchasetotal_tablecolumn>-7.00</td>
-                        <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
-                        <td headers=estimatedvalue_tablecolumn>0.00</td>
-                        <td headers=additionalnotes_tablecolumn>test</td>
-                    </tr>                        
-                </tbody>
-            </table>
-            """)
+        with self.CWI_app.test_request_context():
+            self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
+                <table id=singlecar_table>
+                    <colgroup>
+                        <col span="1" style=visibility:collapse>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:collapse>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" id=carkey_tablecolumn></th>
+                            <th scope="col" id=make_tablecolumn>Make</th>
+                            <th scope="col" id=model_tablecolumn>Model</th>
+                            <th scope="col" id=year_tablecolumn>Year</th>
+                            <th scope="col" id=enginetype_tablecolumn>EngineType</th>
+                            <th scope="col" id=mileage_tablecolumn>Mileage</th>
+                            <th scope="col" id=purchasekey_tablecolumn></th>
+                            <th scope="col" id=taxespaid_tablecolumn>TaxesPaid(USD)</th>
+                            <th scope="col" id=shippingcost_tablecolumn>ShippingCost(USD)</th>
+                            <th scope="col" id=cost_tablecolumn>Cost(USD)</th>
+                            <th scope="col" id=refundamount_tablecolumn>AmountRefunded(USD)</th>
+                            <th scope="col" id=purchasetotal_tablecolumn>PurchaseTotal(USD)</th>
+                            <th scope="col" id=totalinvestedvalue_tablecolumn>TotalInvestedValue(USD)</th>
+                            <th scope="col" id=estimatedvalue_tablecolumn>EstimatedActualValue(USD)</th>
+                            <th scope="col" id=additionalnotes_tablecolumn>AdditionalNotes</th>
+                            <th scope="col" id=viewpurchasehistorylink_tablecolumn></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td headers=carkey_tablecolumn>1</td>
+                            <td headers=make_tablecolumn>toyota</td>
+                            <td headers=model_tablecolumn>corolla</td>
+                            <td headers=year_tablecolumn>2012</td>
+                            <td headers=enginetype_tablecolumn>test</td>
+                            <td headers=mileage_tablecolumn>50000</td>
+                            <td headers=purchasekey_tablecolumn>1</td>
+                            <td headers=taxespaid_tablecolumn>1.00</td>
+                            <td headers=shippingcost_tablecolumn>1.00</td>
+                            <td headers=cost_tablecolumn>1.00</td>
+                            <td headers=refundamount_tablecolumn>10.00</td>
+                            <td headers=purchasetotal_tablecolumn>-7.00</td>
+                            <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
+                            <td headers=estimatedvalue_tablecolumn>0.00</td>
+                            <td headers=additionalnotes_tablecolumn>test</td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=1)}>View Purchase History</a></td>
+                        </tr>                        
+                    </tbody>
+                </table>
+                """)
 
     def testWebCarItemsTableDisplaysWhenItemsExist(self):
         VIEW_CAR_KEY_1_URL = '/car/items/1'
-        self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
-            <table id=items_table>
-                <colgroup>
-                    <col span="1" style=visibility:collapse>
-                    <col span="1" style=visibility:collapse>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                    <col span="1" style=visibility:initial>
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th scope="col" id=itemkey_tablecolumn></th>
-                        <th scope="col" id=incarkey_tablecolumn></th>
-                        <th scope="col" id=source_tablecolumn>Item Source</th>
-                        <th scope="col" id=itemname_tablecolumn>Item Name</th>
-                        <th scope="col" id=taxespaid_tablecolumn>TaxesPaid(USD)</th>
-                        <th scope="col" id=shippingcost_tablecolumn>ShippingCost(USD)</th>
-                        <th scope="col" id=cost_tablecolumn>Cost(USD)</th>
-                        <th scope="col" id=refundamount_tablecolumn>AmountRefunded(USD)</th>
-                        <th scope="col" id=purchasetotal_tablecolumn>PurchaseTotal(USD)</th>
-                        <th scope="col" id=estimatedvalue_tablecolumn>EstimatedActualValue(USD)</th>
-                        <th scope="col" id=additionalnotes_tablecolumn>AdditionalNotes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td headers=itemkey_tablecolumn>1</td>
-                        <td headers=incarkey_tablecolumn>1</td>
-                        <td headers=source_tablecolumn>store</td>
-                        <td headers=itemname_tablecolumn>engine</td>
-                        <td headers=taxespaid_tablecolumn>100.00</td>
-                        <td headers=shippingcost_tablecolumn>100.00</td>
-                        <td headers=cost_tablecolumn>1000.00</td>
-                        <td headers=refundamount_tablecolumn>0.00</td>
-                        <td headers=purchasetotal_tablecolumn>1200.00</td>
-                        <td headers=estimatedvalue_tablecolumn>1000.00</td>
-                        <td headers=additionalnotes_tablecolumn></td>
-                    </tr>              
-                    <tr>
-                        <td headers=itemkey_tablecolumn>2</td>
-                        <td headers=incarkey_tablecolumn>1</td>
-                        <td headers=source_tablecolumn>store</td>
-                        <td headers=itemname_tablecolumn>alternator</td>
-                        <td headers=taxespaid_tablecolumn>10.00</td>
-                        <td headers=shippingcost_tablecolumn>5.00</td>
-                        <td headers=cost_tablecolumn>75.00</td>
-                        <td headers=refundamount_tablecolumn>10.00</td>
-                        <td headers=purchasetotal_tablecolumn>80.00</td>
-                        <td headers=estimatedvalue_tablecolumn>N/A</td>
-                        <td headers=additionalnotes_tablecolumn></td>
-                    </tr>              
-                    <tr>
-                        <td headers=itemkey_tablecolumn>3</td>
-                        <td headers=incarkey_tablecolumn>1</td>
-                        <td headers=source_tablecolumn>store</td>
-                        <td headers=itemname_tablecolumn>spark plug</td>
-                        <td headers=taxespaid_tablecolumn>23.00</td>
-                        <td headers=shippingcost_tablecolumn>34.00</td>
-                        <td headers=cost_tablecolumn>12.00</td>
-                        <td headers=refundamount_tablecolumn>45.00</td>
-                        <td headers=purchasetotal_tablecolumn>24.00</td>
-                        <td headers=estimatedvalue_tablecolumn>N/A</td>
-                        <td headers=additionalnotes_tablecolumn></td>
-                    </tr>              
-                    <tr>
-                        <td headers=itemkey_tablecolumn>4</td>
-                        <td headers=incarkey_tablecolumn>1</td>
-                        <td headers=source_tablecolumn>store</td>
-                        <td headers=itemname_tablecolumn>tire</td>
-                        <td headers=taxespaid_tablecolumn>23.00</td>
-                        <td headers=shippingcost_tablecolumn>34.00</td>
-                        <td headers=cost_tablecolumn>12.00</td>
-                        <td headers=refundamount_tablecolumn>45.00</td>
-                        <td headers=purchasetotal_tablecolumn>24.00</td>
-                        <td headers=estimatedvalue_tablecolumn>123.00</td>
-                        <td headers=additionalnotes_tablecolumn></td>
-                    </tr>              
-                    <tr>
-                        <td headers=itemkey_tablecolumn>5</td>
-                        <td headers=incarkey_tablecolumn>1</td>
-                        <td headers=source_tablecolumn>store</td>
-                        <td headers=itemname_tablecolumn>stereo</td>
-                        <td headers=taxespaid_tablecolumn>15.00</td>
-                        <td headers=shippingcost_tablecolumn>15.00</td>
-                        <td headers=cost_tablecolumn>150.00</td>
-                        <td headers=refundamount_tablecolumn>0.00</td>
-                        <td headers=purchasetotal_tablecolumn>180.00</td>
-                        <td headers=estimatedvalue_tablecolumn>6.00</td>
-                        <td headers=additionalnotes_tablecolumn></td>
-                    </tr>              
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan=8 scope=col></th>
-                        <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>                    
-                        <th colspan=1 scope=col id=footerTotalEstimatedValue_tablecolumn>Total Estimated Value (USD)</th>
-                        <th colspan=1 scope=col></th>
-                    </tr>
-                    <tr>
-                        <td colspan=8></td>
-                        <td colspan=1 headers=footerTotalSpent_tablecolumn>1508.00</td>
-                        <td colspan=1 headers=footerTotalEstimatedValue_tablecolumn>1129.00</td>
-                        <td colspan=1></td>
-                    </tr>
-                </tfoot>
-            </table>
-            """)
+        with self.CWI_app.test_request_context():
+            self.clientResponseHtmlTester(VIEW_CAR_KEY_1_URL, f"""
+                <table id=items_table>
+                    <colgroup>
+                        <col span="1" style=visibility:collapse>
+                        <col span="1" style=visibility:collapse>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:collapse>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th scope="col" id=itemkey_tablecolumn></th>
+                            <th scope="col" id=incarkey_tablecolumn></th>
+                            <th scope="col" id=source_tablecolumn>Item Source</th>
+                            <th scope="col" id=itemname_tablecolumn>Item Name</th>
+                            <th scope="col" id=purchasekey_tablecolumn></th>
+                            <th scope="col" id=taxespaid_tablecolumn>TaxesPaid(USD)</th>
+                            <th scope="col" id=shippingcost_tablecolumn>ShippingCost(USD)</th>
+                            <th scope="col" id=cost_tablecolumn>Cost(USD)</th>
+                            <th scope="col" id=refundamount_tablecolumn>AmountRefunded(USD)</th>
+                            <th scope="col" id=purchasetotal_tablecolumn>PurchaseTotal(USD)</th>
+                            <th scope="col" id=estimatedvalue_tablecolumn>EstimatedActualValue(USD)</th>
+                            <th scope="col" id=additionalnotes_tablecolumn>AdditionalNotes</th>
+                            <th scope="col" id=viewpurchasehistorylink_tablecolumn></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td headers=itemkey_tablecolumn>1</td>
+                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=source_tablecolumn>store</td>
+                            <td headers=itemname_tablecolumn>engine</td>
+                            <td headers=purchasekey_tablecolumn>5</td>
+                            <td headers=taxespaid_tablecolumn>100.00</td>
+                            <td headers=shippingcost_tablecolumn>100.00</td>
+                            <td headers=cost_tablecolumn>1000.00</td>
+                            <td headers=refundamount_tablecolumn>0.00</td>
+                            <td headers=purchasetotal_tablecolumn>1200.00</td>
+                            <td headers=estimatedvalue_tablecolumn>1000.00</td>
+                            <td headers=additionalnotes_tablecolumn></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=5)}>View Purchase History</a></td>
+                        </tr>              
+                        <tr>
+                            <td headers=itemkey_tablecolumn>2</td>
+                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=source_tablecolumn>store</td>
+                            <td headers=itemname_tablecolumn>alternator</td>
+                            <td headers=purchasekey_tablecolumn>6</td>
+                            <td headers=taxespaid_tablecolumn>10.00</td>
+                            <td headers=shippingcost_tablecolumn>5.00</td>
+                            <td headers=cost_tablecolumn>75.00</td>
+                            <td headers=refundamount_tablecolumn>10.00</td>
+                            <td headers=purchasetotal_tablecolumn>80.00</td>
+                            <td headers=estimatedvalue_tablecolumn>N/A</td>
+                            <td headers=additionalnotes_tablecolumn></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=6)}>View Purchase History</a></td>
+                        </tr>              
+                        <tr>
+                            <td headers=itemkey_tablecolumn>3</td>
+                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=source_tablecolumn>store</td>
+                            <td headers=itemname_tablecolumn>spark plug</td>
+                            <td headers=purchasekey_tablecolumn>7</td>
+                            <td headers=taxespaid_tablecolumn>23.00</td>
+                            <td headers=shippingcost_tablecolumn>34.00</td>
+                            <td headers=cost_tablecolumn>12.00</td>
+                            <td headers=refundamount_tablecolumn>45.00</td>
+                            <td headers=purchasetotal_tablecolumn>24.00</td>
+                            <td headers=estimatedvalue_tablecolumn>N/A</td>
+                            <td headers=additionalnotes_tablecolumn></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=7)}>View Purchase History</a></td>
+                        </tr>              
+                        <tr>
+                            <td headers=itemkey_tablecolumn>4</td>
+                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=source_tablecolumn>store</td>
+                            <td headers=itemname_tablecolumn>tire</td>
+                            <td headers=purchasekey_tablecolumn>8</td>
+                            <td headers=taxespaid_tablecolumn>23.00</td>
+                            <td headers=shippingcost_tablecolumn>34.00</td>
+                            <td headers=cost_tablecolumn>12.00</td>
+                            <td headers=refundamount_tablecolumn>45.00</td>
+                            <td headers=purchasetotal_tablecolumn>24.00</td>
+                            <td headers=estimatedvalue_tablecolumn>123.00</td>
+                            <td headers=additionalnotes_tablecolumn></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=8)}>View Purchase History</a></td>
+                        </tr>              
+                        <tr>
+                            <td headers=itemkey_tablecolumn>5</td>
+                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=source_tablecolumn>store</td>
+                            <td headers=itemname_tablecolumn>stereo</td>
+                            <td headers=purchasekey_tablecolumn>9</td>
+                            <td headers=taxespaid_tablecolumn>15.00</td>
+                            <td headers=shippingcost_tablecolumn>15.00</td>
+                            <td headers=cost_tablecolumn>150.00</td>
+                            <td headers=refundamount_tablecolumn>0.00</td>
+                            <td headers=purchasetotal_tablecolumn>180.00</td>
+                            <td headers=estimatedvalue_tablecolumn>6.00</td>
+                            <td headers=additionalnotes_tablecolumn></td>
+                            <td headers=viewpurchasehistorylink_tablecolumn><a href={url_for('web_purchase_data.purchase_history_page', keyorid=9)}>View Purchase History</a></td>
+                        </tr>              
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan=9 scope=col></th>
+                            <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>                    
+                            <th colspan=1 scope=col id=footerTotalEstimatedValue_tablecolumn>Total Estimated Value (USD)</th>
+                            <th colspan=2 scope=col></th>
+                        </tr>
+                        <tr>
+                            <td colspan=9></td>
+                            <td colspan=1 headers=footerTotalSpent_tablecolumn>1508.00</td>
+                            <td colspan=1 headers=footerTotalEstimatedValue_tablecolumn>1129.00</td>
+                            <td colspan=2></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                """)
 
     def testWebCarItemsFormExists(self):
         VIEW_CAR_KEY_1_URL = '/car/items/1'

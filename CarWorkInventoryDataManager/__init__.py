@@ -1,4 +1,3 @@
-#TODO: Implement way to display purchase history
 #TODO: Implement refunded/returned items, refunds have been partially implemented already
 
 def create_and_initialize_app():
@@ -12,9 +11,10 @@ def create_and_initialize_app():
     from .config import default_config
     new_app.config.from_object(default_config)
 
-    from blueprints import web_car, web_home
+    from blueprints import web_car, web_home, web_purchase_data
     new_app.register_blueprint(web_car)
     new_app.register_blueprint(web_home)
+    new_app.register_blueprint(web_purchase_data)
 
     from db import setupDbInfrastructureForApp
     setupDbInfrastructureForApp(new_app)

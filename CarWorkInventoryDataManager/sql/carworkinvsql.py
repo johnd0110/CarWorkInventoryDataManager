@@ -30,8 +30,8 @@ class carWorkInventorySQL(baseSQL):
         """
         Custom call to executeAndCommitSQLStatement that provides the ColumnNamesAndAttributes class type
         so that the column names provided back have the extra configurable attributes for the HTML table display attached
-        :param keepTransactionOpen:
-        :param returnColumnNames:
+        :param keepTransactionOpen: Boolean to determine if the statement execution results should be committed on completion or leave the transaction open
+        :param returnColumnNames: Boolean for if column names should be returned in the second tuple element, otherwise it is None
         :param SQLStatement: SQL query statement to execute as a string
         :param placeholderValues: SQL Placeholder values as a tuple or dictionary
         :return: A tuple of the SQL query results and the column names with the configurable attributes as an columnNamesAndAttributes object
@@ -41,14 +41,15 @@ class carWorkInventorySQL(baseSQL):
                                         columnNamesClassWrapper=columnNamesAndAttributes if returnColumnNames else None,
                                         keepTransactionOpen=keepTransactionOpen)
 
-    @autoSetHiddenColumnsByNames(["carKey"])
+    @autoSetHiddenColumnsByNames(["carKey", "purchaseKey"])
     def getCarsWithViewEditLinksAndTotalValue(self) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT c.carKey, 
                                                       c.make, 
                                                       c.model, 
                                                       c.year, 
                                                       c.engineType, 
-                                                      c.mileage, 
+                                                      c.mileage,
+                                                      p.purchaseKey,
                                                       p.taxesPaid,
                                                       p.shippingCost,
                                                       p.cost,
@@ -68,21 +69,23 @@ class carWorkInventorySQL(baseSQL):
                                                       COALESCE(ve.estimatedValue, 0) as estimatedValue, 
                                                       c.additionalNotes,
                                                       'View' as viewLink,
-                                                      'Edit' as editLink 
+                                                      'Edit' as editLink,
+                                                      'View Purchase History' as viewPurchaseHistoryLink
                                                       FROM Cars c
                                                       JOIN Purchases p
                                                       ON c.purchaseKey = p.purchaseKey
                                                       LEFT JOIN ValueEstimates ve
                                                       ON c.valueEstimateKey = ve.valueEstimateKey""")
 
-    @autoSetHiddenColumnsByNames(["carKey"])
-    def getCarById(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
+    @autoSetHiddenColumnsByNames(["carKey", "purchaseKey"])
+    def getCarByKey(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT c.carKey, 
                                                                    c.make, 
                                                                    c.model, 
                                                                    c.year, 
                                                                    c.engineType, 
                                                                    c.mileage,
+                                                                   p.purchaseKey,
                                                                    p.taxesPaid,
                                                                    p.shippingCost,
                                                                    p.cost,
@@ -100,7 +103,8 @@ class carWorkInventorySQL(baseSQL):
                                                                    p.purchaseTotal AS [totalInvestedValue], 
                                                                    
                                                                    COALESCE(ve.estimatedValue, 0) as estimatedValue,
-                                                                   c.additionalNotes
+                                                                   c.additionalNotes,
+                                                                   'View Purchase History' as viewPurchaseHistoryLink
                                                                    FROM Cars c
                                                                    JOIN Purchases p
                                                                    ON c.purchaseKey = p.purchaseKey
@@ -109,7 +113,7 @@ class carWorkInventorySQL(baseSQL):
                                                                    WHERE c.carKey = ?""",
                                             (carKey,))
 
-    @autoSetHiddenColumnsByNames(["itemGroupTransactionKey", "itemKey", "inCarKey"])
+    @autoSetHiddenColumnsByNames(["itemGroupTransactionKey", "itemKey", "inCarKey", "purchaseKey"])
     def getItemsAndItemGroupTransactionsForCar(self, carKey) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT itg.itemGroupTransactionKey,
                                                                   itg.description as itemGroupDescription,
@@ -117,13 +121,15 @@ class carWorkInventorySQL(baseSQL):
                                                                   itm.inCarKey,
                                                                   itm.source,
                                                                   itm.itemName,
+                                                                  p.purchaseKey,
                                                                   p.taxesPaid,
                                                                   p.shippingCost,
                                                                   p.cost,
                                                                   p.refundAmount,
                                                                   p.purchaseTotal,
                                                                   COALESCE(ve.estimatedValue, 0) as estimatedValue,
-                                                                  itm.additionalNotes
+                                                                  itm.additionalNotes,
+                                                                  'View Purchase History' as viewPurchaseHistoryLink
                                                                   FROM itemGroupTransactions itg
                                                                   JOIN items itm 
                                                                   ON itg.itemGroupTransactionKey = itm.itemGroupTransactionKey
@@ -134,19 +140,21 @@ class carWorkInventorySQL(baseSQL):
                                                                   WHERE itm.inCarKey = ?""",
                                             (carKey,))
 
-    @autoSetHiddenColumnsByNames(["itemKey", "inCarKey"])
+    @autoSetHiddenColumnsByNames(["itemKey", "inCarKey", "purchaseKey"])
     def getItemsForCar(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT itm.itemKey, 
                                                                   itm.inCarKey,
                                                                   itm.source, 
-                                                                  itm.itemName, 
+                                                                  itm.itemName,
+                                                                  p.purchaseKey, 
                                                                   p.taxesPaid, 
                                                                   p.shippingCost, 
                                                                   p.cost,
                                                                   p.refundAmount,
                                                                   p.purchaseTotal,
                                                                   ve.estimatedValue,
-                                                                  itm.additionalNotes 
+                                                                  itm.additionalNotes,
+                                                                  'View Purchase History' as viewPurchaseHistoryLink 
                                                                   FROM Items itm
                                                                   JOIN Purchases p
                                                                   ON itm.purchaseKey = p.purchaseKey
@@ -174,6 +182,17 @@ class carWorkInventorySQL(baseSQL):
                                                                   ON we.employeeKey = emp.employeeKey 
                                                                   WHERE we.carKeyWorkedOn = ?""",
                                             placeholderValues=(carKey,))
+
+    def getPurchaseHistoryByKey(self, purchaseKey: int) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT ph.effectiveDate as changedDate,
+                                                                  ph.cost,
+                                                                  ph.taxesPaid,
+                                                                  ph.shippingCost,
+                                                                  ph.refundAmount
+                                                           FROM PurchasesHistory ph
+                                                           WHERE ph.purchaseKey = ?
+                                                           ORDER BY ph.version ASC""",
+                                                placeholderValues=(purchaseKey,))
 
     def _insertPurchaseWithOpenTransaction(self, purchaseDataValues: lowerCaseKeyDict):
         """

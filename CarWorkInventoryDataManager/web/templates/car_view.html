@@ -11,6 +11,7 @@
     {% if endpointViewName == "car_edit" %}
         {{forms.generateStandardEntryForm('edit_car', carssqlres[1], legendText="Edit Entry", prefilldata=carssqlres[0][0])}}
     {% else %}
+        {# Mini navigation bar to toggle between viewing items or item group transactions and related form #}
         <ul>
             <li><a href={{url_for('web_car.car_items', keyorid=carkey)}}>Items</a></li>
             <li><a href={{url_for('web_car.car_igt', keyorid=carkey)}}>Item groups</a></li>

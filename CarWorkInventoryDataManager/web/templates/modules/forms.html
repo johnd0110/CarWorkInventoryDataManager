@@ -31,7 +31,11 @@
 
 {% macro generateFormForTable(formID, tableColumnsAndAttributes, legendText) %}
     {# Builds out a form which gathers data for a SQL Insert dynamically based on the provided column names and attributes object.
-       Form ID determines which table to insert into (Refer to web/web_display.py for the defined Form IDs). #}
+
+       Form ID determines which table to insert into (Refer to web/web_display.py for the defined Form IDs).
+
+       Expects to be called from a call block to provide the main layout of the form. (See below macros for examples)
+    #}
     {% if tableColumnsAndAttributes and tableColumnsAndAttributes.HasValidInputs()%}
         {% set formID = formID ~ "_form" %}
         <form method="post" autocomplete="off" id={{formID}}>

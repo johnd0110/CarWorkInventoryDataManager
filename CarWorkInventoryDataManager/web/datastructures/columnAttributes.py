@@ -99,6 +99,11 @@ class columnNamesAndAttributes(columnNames, lowerCaseKeyDict):
         return all(nestColumnBoolList) if checkAll else any(nestColumnBoolList)
 
     def generateColSpansAndFooterColumnNamesWithFiller(self):
+        """
+        Generates a list of tuples containing a column span value and a column name to generate a footer total for.
+        Filler tuples will be generated to generate cells that span across any columns we are not generating a footer total for.
+        :return: A list of (column span, footer column name or "") tuples
+        """
         enumeratedVisibleColumnNames = list(enumerate(self.keys()))
         tableIndicesAndFooterColumnNames = [indexAndColumnNameTuple for indexAndColumnNameTuple in enumeratedVisibleColumnNames if self[indexAndColumnNameTuple[1]].isFooterTotalColumn()]
 

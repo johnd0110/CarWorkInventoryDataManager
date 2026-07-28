@@ -1,7 +1,6 @@
 # External Libraries or built-in Python libraries
 from flask import Blueprint, render_template, redirect, url_for, request
 
-from conversion_helper import item
 # Modules / packages in this project
 from tableConfig import setWorkEffortsByCarWithEmployeesTableAndInputConfig, setItemsTableAndInputConfig, setCarsTableAndInputConfig, setCarsTableConfig, setPurchasesTableConfig, setValueEstimatesTableConfig, setItemGroupTransactionTableAndInputConfig
 from db import get_CWI_db
@@ -57,7 +56,7 @@ def car_page(keyorid):
             case _:
                 raise NotImplementedError
 
-    carssqlres = sqlapp.getCarById(keyorid)
+    carssqlres = sqlapp.getCarByKey(keyorid)
     setCarsTableConfig(carssqlres[1])
     setPurchasesTableConfig(carssqlres[1], includeFooter=False)
     setValueEstimatesTableConfig(carssqlres[1])
@@ -95,7 +94,7 @@ def car_edit_page(keyorid):
             case _:
                 raise NotImplementedError
 
-    carsSqlResult = sqlapp.getCarById(keyorid)
+    carsSqlResult = sqlapp.getCarByKey(keyorid)
     setCarsTableAndInputConfig(carsSqlResult[1], includeFooter=False)
 
     return render_template("car_view.html",

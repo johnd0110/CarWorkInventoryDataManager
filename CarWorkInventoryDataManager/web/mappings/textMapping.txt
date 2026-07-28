@@ -22,3 +22,4 @@ estimatedValue, Estimated Actual Value (USD);
 footerTotalEstimatedValue, Total Estimated Value (USD);
 additionalNotes, Additional Notes;
 itemGroupDescription, Group Description;
+changedDate, Date Changed;
