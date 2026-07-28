@@ -489,13 +489,15 @@ class CWIFlaskAppTests(baseTestSuite):
                 <tfoot>
                     <tr>
                         <th colspan=8 scope=col></th>
-                        <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>
-                        <th colspan=2 scope=col></th>
+                        <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>                    
+                        <th colspan=1 scope=col id=footerTotalEstimatedValue_tablecolumn>Total Estimated Value (USD)</th>
+                        <th colspan=1 scope=col></th>
                     </tr>
                     <tr>
                         <td colspan=8></td>
                         <td colspan=1 headers=footerTotalSpent_tablecolumn>1508.00</td>
-                        <td colspan=2></td>
+                        <td colspan=1 headers=footerTotalEstimatedValue_tablecolumn>1129.00</td>
+                        <td colspan=1></td>
                     </tr>
                 </tfoot>
             </table>

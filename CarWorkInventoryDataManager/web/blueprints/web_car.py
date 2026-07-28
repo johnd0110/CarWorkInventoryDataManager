@@ -63,7 +63,7 @@ def car_page(keyorid):
     setValueEstimatesTableConfig(carssqlres[1])
 
     itemssqlresult = sqlapp.getItemsForCar(keyorid)
-    setItemsTableAndInputConfig(itemssqlresult[1])
+    setItemsTableAndInputConfig(itemssqlresult[1], True)
 
     igtsqlres = sqlapp.getItemsAndItemGroupTransactionsForCar(keyorid)
     setItemGroupTransactionTableAndInputConfig(igtsqlres[1])

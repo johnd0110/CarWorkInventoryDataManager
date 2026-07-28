@@ -82,7 +82,7 @@
                                         {% if isHeaderRow %}
                                             {{textMap[footerHeaderTextMapKey] if footerHeaderTextMapKey}}
                                         {% else %}
-                                            {{_decimalFormatString.format(tableSqlResultData | sum(attribute=footerColumnName), footerColumnAttributes.decimalPlaces) if footerColumnName}}
+                                            {{_decimalFormatString.format(tableSqlResultData | selectattr(footerColumnName, "number") | sum(attribute=footerColumnName), footerColumnAttributes.decimalPlaces) if footerColumnName}}
                                         {% endif %}
                                     </{{cellElementTag}}>
                                 {% endfor %}

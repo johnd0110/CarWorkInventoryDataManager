@@ -106,8 +106,10 @@ class columnNamesAndAttributes(columnNames, lowerCaseKeyDict):
         visibleColumnNamesListLength = len(enumeratedVisibleColumnNames)
         currentLength = 0
         for tableIndex, footerColumnName in tableIndicesAndFooterColumnNames:
-            colSpanAndFooterColumnNamesListWithFiller.append((tableIndex - currentLength, ""))
-            currentLength += tableIndex
+            fillerColumnSpan = tableIndex - currentLength
+            if fillerColumnSpan > 0:
+                colSpanAndFooterColumnNamesListWithFiller.append((fillerColumnSpan, ""))
+                currentLength += fillerColumnSpan
 
             colSpanAndFooterColumnNamesListWithFiller.append((1, footerColumnName))
             currentLength += 1

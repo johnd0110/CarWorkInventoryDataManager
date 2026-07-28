@@ -59,9 +59,9 @@ def setItemGroupTransactionTableAndInputConfig(igtsqlCNA):
     igtsqlCNA["itemGroupDescription"].requiredInput = True
     igtsqlCNA["itemGroupDescription"].isGroupInput = True
 
-    setItemsTableAndInputConfig(igtsqlCNA)
+    setItemsTableAndInputConfig(igtsqlCNA, True)
 
-def setItemsTableAndInputConfig(itemssqlCNA):
+def setItemsTableAndInputConfig(itemssqlCNA, includeFooter=False):
     itemssqlCNA["source"].InputType = InputTypes.TEXT.value
     itemssqlCNA["source"].requiredInput = True
 
@@ -72,19 +72,22 @@ def setItemsTableAndInputConfig(itemssqlCNA):
 
     setPurchasesTableAndInputConfig(itemssqlCNA)
 
-    setValueEstimatesTableAndInputConfig(itemssqlCNA)
+    setValueEstimatesTableAndInputConfig(itemssqlCNA, includeFooter=includeFooter)
 
-def setValueEstimatesTableConfig(sqlCNA):
+def setValueEstimatesTableConfig(sqlCNA, includeFooter=False):
     sqlCNA["estimatedValue"].decimalPlaces = 2
     sqlCNA["estimatedValue"].default = (None, "N/A")
+
+    if includeFooter:
+        sqlCNA["estimatedValue"].footerTotalTextMapKey = "footerTotalEstimatedValue"
 
 def setValueEstimatesInputConfig(sqlCNA):
     sqlCNA["estimatedValue"].InputType = InputTypes.NUMBER.value
     sqlCNA["estimatedValue"].requiredInput = False
     sqlCNA["estimatedValue"].MinMaxStep = ("0", None, "0.01")
 
-def setValueEstimatesTableAndInputConfig(sqlCNA):
-    setValueEstimatesTableConfig(sqlCNA)
+def setValueEstimatesTableAndInputConfig(sqlCNA, includeFooter=False):
+    setValueEstimatesTableConfig(sqlCNA, includeFooter=includeFooter)
 
     setValueEstimatesInputConfig(sqlCNA)
 
