@@ -1,6 +1,6 @@
 [project]
 name = "CarWorkInventoryDataManager"
-version = "0.2.2"
+version = "0.2.4"
 authors = [
     { name="John Diep", email="johndiep0110@gmail.com" },
 ]
