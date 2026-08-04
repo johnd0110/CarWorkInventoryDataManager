@@ -70,7 +70,7 @@ class carWorkInventorySQL(baseSQL):
                                                       c.additionalNotes,
                                                       'View' as viewLink,
                                                       'Edit' as editLink,
-                                                      'View Purchase History' as viewPurchaseHistoryLink
+                                                      'View/Edit Purchase Data' as viewEditPurchaseDataLink
                                                       FROM Cars c
                                                       JOIN Purchases p
                                                       ON c.purchaseKey = p.purchaseKey
@@ -104,7 +104,7 @@ class carWorkInventorySQL(baseSQL):
                                                                    
                                                                    COALESCE(ve.estimatedValue, 0) as estimatedValue,
                                                                    c.additionalNotes,
-                                                                   'View Purchase History' as viewPurchaseHistoryLink
+                                                                   'View/Edit Purchase Data' as viewEditPurchaseDataLink
                                                                    FROM Cars c
                                                                    JOIN Purchases p
                                                                    ON c.purchaseKey = p.purchaseKey
@@ -129,7 +129,7 @@ class carWorkInventorySQL(baseSQL):
                                                                   p.purchaseTotal,
                                                                   COALESCE(ve.estimatedValue, 0) as estimatedValue,
                                                                   itm.additionalNotes,
-                                                                  'View Purchase History' as viewPurchaseHistoryLink
+                                                                  'View/Edit Purchase Data' as viewEditPurchaseDataLink
                                                                   FROM itemGroupTransactions itg
                                                                   JOIN items itm 
                                                                   ON itg.itemGroupTransactionKey = itm.itemGroupTransactionKey
@@ -154,7 +154,7 @@ class carWorkInventorySQL(baseSQL):
                                                                   p.purchaseTotal,
                                                                   ve.estimatedValue,
                                                                   itm.additionalNotes,
-                                                                  'View Purchase History' as viewPurchaseHistoryLink 
+                                                                  'View/Edit Purchase Data' as viewEditPurchaseDataLink 
                                                                   FROM Items itm
                                                                   JOIN Purchases p
                                                                   ON itm.purchaseKey = p.purchaseKey
@@ -183,16 +183,28 @@ class carWorkInventorySQL(baseSQL):
                                                                   WHERE we.carKeyWorkedOn = ?""",
                                             placeholderValues=(carKey,))
 
-    def getPurchaseHistoryByKey(self, purchaseKey: int) -> tuple[list, columnNamesAndAttributes | None]:
+    @autoSetHiddenColumnsByNames(["version"])
+    def getPurchaseHistoryAndCurrentPurchaseDataByKey(self, purchaseKey: int) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT ph.effectiveDate as changedDate,
+                                                                  ph.version,
                                                                   ph.cost,
                                                                   ph.taxesPaid,
                                                                   ph.shippingCost,
                                                                   ph.refundAmount
                                                            FROM PurchasesHistory ph
-                                                           WHERE ph.purchaseKey = ?
-                                                           ORDER BY ph.version ASC""",
-                                                placeholderValues=(purchaseKey,))
+                                                           WHERE ph.purchaseKey = :purchasekey
+                                                           UNION ALL
+                                                           SELECT "CURRENT" as changedDate,
+                                                                  (SELECT MAX(ph.version) + 1 FROM PurchasesHistory ph WHERE ph.purchaseKey = p.purchaseKey) AS version,
+                                                                  p.cost,
+                                                                  p.taxesPaid,
+                                                                  p.shippingCost,
+                                                                  p.refundAmount
+                                                           FROM Purchases p
+                                                           WHERE p.purchaseKey = :purchasekey
+                                                           ORDER BY version ASC
+                                                           """,
+                                                placeholderValues=lowerCaseKeyDict({"purchaseKey": purchaseKey}).data)
 
     def _insertPurchaseWithOpenTransaction(self, purchaseDataValues: lowerCaseKeyDict):
         """
@@ -308,9 +320,18 @@ class carWorkInventorySQL(baseSQL):
                                             workEffortDataValues.data,
                                             False)
 
-    def updateCarPurchaseAndValueEstimate(self, carDataValues: lowerCaseKeyDict):
-        parentKeysToUpdateResult, _ = self.CWI_executeSQLStatement("""SELECT c.purchaseKey,
-                                                                                         c.valueEstimateKey
+    def updatePurchaseData(self, purchaseDataValues: lowerCaseKeyDict):
+        return self.CWI_executeSQLStatement("""UPDATE Purchases
+                                                           SET cost = :cost,
+                                                           taxesPaid = :taxespaid,
+                                                           shippingCost = :shippingcost,
+                                                           refundAmount = :refundamount
+                                                           WHERE purchaseKey = :purchasekey""",
+                                             purchaseDataValues.data,
+                                             False)
+
+    def updateCarAndValueEstimate(self, carDataValues: lowerCaseKeyDict):
+        parentKeysToUpdateResult, _ = self.CWI_executeSQLStatement("""SELECT c.valueEstimateKey
                                                                                          FROM Cars c
                                                                                          WHERE c.carKey = :carkey""",
                                                                    carDataValues.data,
@@ -329,18 +350,6 @@ class carWorkInventorySQL(baseSQL):
                                              True)
         else:
             self._insertValueEstimateWithOpenTransaction(carDataValues)
-
-        purchaseKeyColumnName = "purchaseKey"
-        carDataValues[purchaseKeyColumnName] = parentKeysToUpdateResult[0][purchaseKeyColumnName]
-
-        _ = self.CWI_executeSQLStatement("""UPDATE Purchases
-                                                        SET cost = :cost,
-                                                        taxesPaid = :taxespaid,
-                                                        shippingCost = :shippingcost,
-                                                        refundAmount = :refundamount
-                                                        WHERE purchaseKey = :purchasekey""",
-                                         carDataValues.data,
-                                         False)
 
         _ = self.CWI_executeSQLStatement("""UPDATE Cars 
                                                         SET make = :make, 

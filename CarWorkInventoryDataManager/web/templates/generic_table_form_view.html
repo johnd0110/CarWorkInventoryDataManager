@@ -6,4 +6,5 @@
     <a href={{url_for('web_home.main_page')}}> Home </a>
 
     {{tables.displayResults('general_table', tablesqlres)}}
+    {{forms.generateStandardEntryForm(formId, tablesqlres[1], legendText, prefillData)}}
 {% endblock %}

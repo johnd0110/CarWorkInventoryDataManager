@@ -89,13 +89,16 @@ def car_edit_page(keyorid):
         match request.form["formid"].lower():
             case "edit_car_form":
                 req_form_dict['carkey'] = keyorid
-                _ = sqlapp.updateCarPurchaseAndValueEstimate(req_form_dict)
+                _ = sqlapp.updateCarAndValueEstimate(req_form_dict)
                 return redirect(url_for('web_home.main_page'))
             case _:
                 raise NotImplementedError
 
     carsSqlResult = sqlapp.getCarByKey(keyorid)
-    setCarsTableAndInputConfig(carsSqlResult[1], includeFooter=False)
+    setCarsTableAndInputConfig(carsSqlResult[1], includeFooter=False, includePurchaseData=False)
 
-    return render_template("car_view.html",
-                           carssqlres=carsSqlResult)
+    return render_template("generic_table_form_view.html",
+                           tablesqlres=carsSqlResult,
+                           formId="edit_car",
+                           legendText="Edit Car Entry",
+                           prefillData=carsSqlResult[0][0])

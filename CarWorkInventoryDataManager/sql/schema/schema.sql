@@ -143,15 +143,15 @@ BEGIN
     SELECT RAISE(ABORT, CONCAT('Updates to the purchase key are not allowed. They should only be done by people who know what they are doing.'))
     WHERE OLD.purchaseKey != NEW.purchaseKey;
 
-    -- Create a new purchase history row using the updated purchase data with the latest version incremented
+    -- Create a new purchase history row using the old purchase data with the latest version incremented
     -- If no history rows found then set the version = 0 for the first row inserted
     INSERT INTO PurchasesHistory(purchaseKey, version, cost, taxesPaid, shippingCost, refundAmount)
-    VALUES(NEW.purchaseKey,
-           COALESCE((SELECT latestVersion FROM (SELECT ph2.purchaseKey, MAX(ph2.version) as latestVersion FROM purchasesHistory ph2 GROUP BY ph2.purchaseKey) ph_max_ver WHERE ph_max_ver.purchaseKey = NEW.purchaseKey) + 1, 0),
-           NEW.cost,
-           NEW.taxesPaid,
-           NEW.shippingCost,
-           NEW.refundAmount);
+    VALUES(OLD.purchaseKey,
+           COALESCE((SELECT latestVersion FROM (SELECT ph2.purchaseKey, MAX(ph2.version) as latestVersion FROM purchasesHistory ph2 GROUP BY ph2.purchaseKey) ph_max_ver WHERE ph_max_ver.purchaseKey = OLD.purchaseKey) + 1, 0),
+           OLD.cost,
+           OLD.taxesPaid,
+           OLD.shippingCost,
+           OLD.refundAmount);
 END;
 
 -- ========================================================================================================

@@ -1,5 +1,6 @@
 from CarWorkInventoryDataManager.sql.SQL_CONSTANTS import MIN_SQL_YEAR, MAX_SQL_YEAR, MINIMUM_SQL_DATE, MAXIMUM_SQL_DATE
 from datastructures.htmlEnums import InputTypes
+from datastructures import VisibilityOptions
 
 def setCarsTableConfig(carsSqlResult):
     carsSqlResult["totalInvestedValue"].decimalPlaces = 2
@@ -24,12 +25,12 @@ def setCarsInputConfig(carsSqlResult):
 
     carsSqlResult["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
-def setCarsTableAndInputConfig(carsSqlResult, includeFooter=True):
+def setCarsTableAndInputConfig(carsSqlResult, includeFooter=True, includePurchaseData=True):
     setCarsInputConfig(carsSqlResult)
 
     setCarsTableConfig(carsSqlResult)
 
-    setPurchasesTableAndInputConfig(carsSqlResult, includeFooter)
+    setPurchasesTableAndInputConfig(carsSqlResult, includeFooter, includePurchaseData)
 
     setValueEstimatesTableAndInputConfig(carsSqlResult)
 
@@ -90,7 +91,16 @@ def setValueEstimatesTableAndInputConfig(sqlCNA, includeFooter=False):
 
     setValueEstimatesInputConfig(sqlCNA)
 
-def setGeneralPurchasesTableConfig(sqlCNA):
+def setGeneralPurchasesTableConfig(sqlCNA, isVisible=True):
+    if not isVisible:
+        sqlCNA["taxesPaid"].visibility = VisibilityOptions.COLLAPSE.value
+
+        sqlCNA["shippingCost"].visibility = VisibilityOptions.COLLAPSE.value
+
+        sqlCNA["cost"].visibility = VisibilityOptions.COLLAPSE.value
+
+        sqlCNA["refundAmount"].visibility = VisibilityOptions.COLLAPSE.value
+
     sqlCNA["taxesPaid"].decimalPlaces = 2
 
     sqlCNA["shippingCost"].decimalPlaces = 2
@@ -99,13 +109,16 @@ def setGeneralPurchasesTableConfig(sqlCNA):
 
     sqlCNA["refundAmount"].decimalPlaces = 2
 
-def setPurchasesTableConfig(sqlCNA, includeFooter=True):
-    setGeneralPurchasesTableConfig(sqlCNA)
+def setPurchasesTableConfig(sqlCNA, includeFooter=True, isVisible=True):
+    setGeneralPurchasesTableConfig(sqlCNA, isVisible=isVisible)
 
-    setViewPurchaseHistoryLinkTableConfig(sqlCNA)
+    setViewPurchaseHistoryLinkTableConfig(sqlCNA, isVisible=isVisible)
 
-    if includeFooter:
+    if includeFooter and isVisible:
         sqlCNA["purchaseTotal"].footerTotalTextMapKey = "footerTotalSpent"
+
+    if not isVisible:
+        sqlCNA["purchaseTotal"].visibility = VisibilityOptions.COLLAPSE.value
 
     sqlCNA["purchaseTotal"].decimalPlaces = 2
 
@@ -129,10 +142,11 @@ def setPurchasesInputConfig(sqlCNA):
     sqlCNA["refundAmount"].requiredInput = True
     sqlCNA["refundAmount"].MinMaxStep = ("0", None, "0.01")
 
-def setPurchasesTableAndInputConfig(sqlCNA, includeFooter=True):
-    setPurchasesTableConfig(sqlCNA, includeFooter)
+def setPurchasesTableAndInputConfig(sqlCNA, includeFooter=True, isVisible=True):
+    setPurchasesTableConfig(sqlCNA, includeFooter, isVisible)
 
-    setPurchasesInputConfig(sqlCNA)
+    if isVisible:
+        setPurchasesInputConfig(sqlCNA)
 
 def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, employeessqldata):
     workeffortssqlCNA["employeeKey"].isNestColumn = True
@@ -164,6 +178,9 @@ def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, emplo
 def setPurchaseHistoryTableConfig(sqlCNA):
     setGeneralPurchasesTableConfig(sqlCNA)
 
-def setViewPurchaseHistoryLinkTableConfig(sqlCNA):
-    sqlCNA["viewPurchaseHistoryLink"].makeTableHeader = False
-    sqlCNA["viewPurchaseHistoryLink"].urlData = ('web_purchase_data.purchase_history_page', 'View Purchase History', 'purchaseKey')
+def setViewPurchaseHistoryLinkTableConfig(sqlCNA, isVisible=True):
+    if not isVisible:
+        sqlCNA["viewEditPurchaseDataLink"].visibility = VisibilityOptions.COLLAPSE.value
+
+    sqlCNA["viewEditPurchaseDataLink"].makeTableHeader = False
+    sqlCNA["viewEditPurchaseDataLink"].urlData = ('web_purchase_data.purchase_data_page', 'View/Edit Purchase Data', 'purchaseKey')
