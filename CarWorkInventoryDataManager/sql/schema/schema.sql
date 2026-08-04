@@ -89,7 +89,7 @@ CREATE TABLE Purchases(purchaseKey INTEGER PRIMARY KEY,
 -- Version history table for the Purchases table
 CREATE TABLE PurchasesHistory(purchaseKey INTEGER NOT NULL,
                               version INTEGER NOT NULL,
-                              effectiveDate DATE NOT NULL CHECK (datetime(effectiveDate) IS effectiveDate) DEFAULT CURRENT_TIMESTAMP,
+                              effectiveDate DATE NOT NULL CHECK (datetime(effectiveDate) IS effectiveDate) DEFAULT (DATETIME('now', 'localtime')),
                               cost NUMERIC NOT NULL DEFAULT 0,
                               taxesPaid NUMERIC NOT NULL DEFAULT 0,
                               shippingCost NUMERIC NOT NULL DEFAULT 0,
