@@ -26,3 +26,21 @@ def db_teardown(exception):
 
 def setupDbInfrastructureForApp(app):
     app.teardown_appcontext(db_teardown)
+
+def ensureCompleteData(func):
+    """
+    Decorator for ensuring that all data created or modified to the application database
+    is only committed on success of the decorated function
+
+    If the decorated function fails in any way,
+    every modification made to the database is rolled back to the state before the function ran
+    :param func: Function to be decorated that is used as part of a Flask application
+    :return: The decorated function
+    """
+    def inner(*args, **kwargs):
+        result = None
+        with get_CWI_db().connection:
+            result = func(*args, **kwargs)
+
+        return result
+    return inner

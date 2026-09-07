@@ -88,7 +88,7 @@ class CWIDatabaseTests(baseTestSuite):
         self.assertEqual(len(self.db.insertCar(lowerCaseKeyDict({'make': 'toyota', 'model': 'camry', 'year': 2010, 'enginetype': 'v9', 'mileage': 12345, 'cost': 12345, 'taxespaid': 1, 'shippingcost': 1, 'refundAmount': 0, 'estimatedvalue': 100, 'additionalnotes': ''}))[0]), 1)
 
         # Tests purchases and value estimate tables again but for items in addition to the items and item group transactions tables
-        self.assertEqual(len(self.db.insertSingleItem(lowerCaseKeyDict({'incarkey': 1, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': 10, 'itemgroupdescription': 'test', 'source': '', 'additionalnotes': ''}))[0]), 1)
+        self.assertEqual(len(self.db.insertSingleItem(lowerCaseKeyDict({'carkey': 1, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': 10, 'itemgroupdescription': 'test', 'source': '', 'additionalnotes': ''}))[0]), 1)
 
         self.assertEqual(len(self.db.insertEmployee(lowerCaseKeyDict({'employeename': 'jimbo'}))[0]), 1)
 
@@ -120,27 +120,38 @@ class CWIDatabaseTests(baseTestSuite):
                                                 *args)
 
         # Test car key foreign key on items table
-        insertForeignKeyConstraintTest(self.db.insertSingleItem, lowerCaseKeyDict({'incarkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
+        insertForeignKeyConstraintTest(self.db.insertSingleItem, lowerCaseKeyDict({'carkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
 
         # Test item group transaction foreign key on items table
-        insertForeignKeyConstraintTest(self.db.insertSingleItem, lowerCaseKeyDict({'incarkey': 1, 'itemgrouptransactionkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
-
+        insertForeignKeyConstraintTest(self.db.insertSingleItem, lowerCaseKeyDict({'carkey': 1, 'itemgrouptransactionkey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
 
         # Test purchase foreign key on items table
-        insertForeignKeyConstraintTest(self.db.CWI_executeSQLStatement, "INSERT INTO Items(itemGroupTransactionKey, purchaseKey, itemName) VALUES(1, 1000000, '')")
+        insertForeignKeyConstraintTest(self.db.executeSQLStatement,
+                                       """ INSERT INTO ValueEstimates(valueEstimateKey, estimatedValue) VALUES (1000, 0);
+                                       INSERT INTO Items(itemGroupTransactionKey, purchaseKey, valueEstimateKey, itemName) VALUES(1, 1000000, 1000, '');""",
+                                       (),
+                                       None,
+                                       True,
+                                       False)
 
         insertForeignKeyConstraintTest(self.db.insertWorkEffort, lowerCaseKeyDict({'carkeyworkedon': 999999, 'employeekey': 1, 'workeffortdate': '2019-08-12', 'laborhours': 1, 'estimatedpay': 1, 'worktype': 'tire replacement'}))
         insertForeignKeyConstraintTest(self.db.insertWorkEffort, lowerCaseKeyDict({'carkeyworkedon': 1, 'employeekey': 999999, 'workeffortdate': '2019-08-12', 'laborhours': 1, 'estimatedpay': 1, 'worktype': 'tire replacement'}))
         insertForeignKeyConstraintTest(self.db.insertWorkEffort, lowerCaseKeyDict({'carkeyworkedon': 888888, 'employeekey': 999999, 'workeffortdate': '2019-08-12', 'laborhours': 1, 'estimatedpay': 1, 'worktype': 'tire replacement'}))
 
         # Test purchase foreign key on cars table
-        insertForeignKeyConstraintTest(self.db.CWI_executeSQLStatement, 'INSERT INTO Cars(purchaseKey, make, model, year, engineType) VALUES (100000, \'\', \'\', \'\', \'\')')
+        insertForeignKeyConstraintTest(self.db.executeSQLStatement,
+                                       """ INSERT INTO ValueEstimates(valueEstimateKey, estimatedValue) VALUES (10000, 0);
+                                       INSERT INTO Cars(purchaseKey, valueEstimateKey, make, model, year, engineType) VALUES (100000, 10000, \'\', \'\', \'\', \'\');""",
+                                       (),
+                                       None,
+                                       True,
+                                       False)
 
     def testCWIDbItemInsertPreventsRetroactiveLinkToPurchase(self):
         # Test that item inserts prevent linking to a pre-existing purchase key
         self.assertRaises(ValueError,
                           self.db.insertSingleItem,
-                          lowerCaseKeyDict({'incarkey': 1, 'purchasekey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
+                          lowerCaseKeyDict({'carkey': 1, 'purchasekey': 100000, 'itemname': 'hub cap', 'taxespaid': 50.23, 'shippingcost': 12.34, 'cost': 123, 'refundamount': 0, 'estimatedvalue': None, 'itemgroupdescription': '', 'source': '', 'additionalnotes': ''}))
 
     def testAuthorizerStopsDirectPurchaseHistoryInsert(self):
         # Test that the authorizer callback on the database disallows inserts on purchase history table
@@ -149,8 +160,12 @@ class CWIDatabaseTests(baseTestSuite):
     def testValidUpdateStatementSucceeds(self):
         #Test valid updates on all columns (except primary keys and foreign keys) for each table, when update succeeds, no results are returned and no error should occur
         self.assertEqual(len(self.db.CWI_executeSQLStatement("UPDATE Cars SET make='toyota', model='corolla', year=2022, engineType='V6', mileage=10000, additionalNotes='test' WHERE carKey=1", returnColumnNames=False)[0]), 0)
-        # TODO: Test updating purchases or value estimates of specific car/item keys
-        self.assertEqual(len(self.db.CWI_executeSQLStatement("UPDATE Items SET inCarKey=2, itemName='car seat', source='amazon', additionalNotes='test' WHERE itemKey=1", returnColumnNames=False)[0]), 0)
+
+        self.assertEqual(len(self.db.CWI_executeSQLStatement("UPDATE Items SET itemName='car seat', source='amazon', additionalNotes='test' WHERE itemKey=1", returnColumnNames=False)[0]), 0)
+
+        self.assertEqual(len(self.db.CWI_executeSQLStatement("UPDATE Purchases SET cost = 100, taxesPaid = 10, shippingCost = 15, refundAmount = 1 WHERE purchaseKey = 5", returnColumnNames=False)[0]), 0)
+
+        self.assertEqual(len(self.db.CWI_executeSQLStatement("UPDATE ValueEstimates SET estimatedValue = 12345 WHERE valueEstimateKey = 1", returnColumnNames=False)[0]), 0)
 
         self.assertEqual(len(self.db.CWI_executeSQLStatement("UPDATE Employees SET employeeName='jimbojimbo' WHERE employeekey=1", returnColumnNames=False)[0]), 0)
 
@@ -189,13 +204,10 @@ class CWIDatabaseTests(baseTestSuite):
         updateForeignKeyConstraintTest("UPDATE ValueEstimates SET valueEstimateKey=100 WHERE valueEstimateKey=1")
 
         # Test foreign key changes to a non-existent key Expected result: Foreign key constraint violation
-        updateForeignKeyConstraintTest("UPDATE Items SET inCarKey=1000000 WHERE itemKey=1")
+        updateForeignKeyConstraintTest("UPDATE ItemsToCars SET carKey=1000000 WHERE itemKey=1")
 
-        # Item key = 2 should have valueEstimateKey = NULL, thus setting it to a key is allowed,
-        # but not if it does not reference a real row
         updateForeignKeyConstraintTest("UPDATE Items SET valueEstimateKey=1000000 WHERE itemKey=2")
 
-        # On Cars Table NULL -> New value estimate key is allowed, but not if the key does not reference an actual row
         updateForeignKeyConstraintTest("UPDATE Cars SET valueEstimateKey=100000 WHERE carKey=1")
 
     def testCarsUpdateValidationTriggerStopsUpdate(self):
@@ -206,8 +218,7 @@ class CWIDatabaseTests(baseTestSuite):
                                                 self.db.CWI_executeSQLStatement,
                                                 SQLStatement,
                                                 returnColumnNames=False)
-        carsTableValidationTriggerTest("UPDATE Cars SET purchaseKey=100000 WHERE carKey=1")
-        carsTableValidationTriggerTest("UPDATE Cars SET purchaseKey=100000 WHERE carKey=1")
+        carsTableValidationTriggerTest("UPDATE Cars SET purchaseKey=4 WHERE carKey=1")
 
     def testItemsUpdateValidationTriggerStopsUpdate(self):
         def itemsTableValidationTriggerTest(SQLStatement):
@@ -216,11 +227,11 @@ class CWIDatabaseTests(baseTestSuite):
                                                 self.db.CWI_executeSQLStatement,
                                                 SQLStatement,
                                                 returnColumnNames=False)
-        itemsTableValidationTriggerTest("UPDATE Items SET itemGroupTransactionKey=1000000 WHERE itemKey=1")
-        itemsTableValidationTriggerTest("UPDATE Items SET purchaseKey=1000000 WHERE itemKey=1")
+        itemsTableValidationTriggerTest("UPDATE Items SET itemGroupTransactionKey=3 WHERE itemKey=1")
+        itemsTableValidationTriggerTest("UPDATE Items SET purchaseKey=6 WHERE itemKey=1")
         # Item key = 1 in the unit test data already has a value estimate key set
         # Thus setting to another key is not allowed by the validation trigger
-        itemsTableValidationTriggerTest("UPDATE Items SET valueEstimateKey=1000000 WHERE itemKey=1")
+        itemsTableValidationTriggerTest("UPDATE Items SET valueEstimateKey=1 WHERE itemKey=1")
 
     def testWorkEffortsUpdateValidationTriggerStopsUpdate(self):
         def workEffortsTableValidationTriggerTest(SQLStatement):

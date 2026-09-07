@@ -49,7 +49,6 @@ class baseSQL:
                  nothing useful for other queries like INSERT paired with the queries' column names along with a blank slate of decorated (if at all) column names
                  UNLESS a returning clause is provided, in which case the results will be that of the returning clause
         """
-        # TODO: Implement savepoints/nested transactions to prevent data from committing to databases if a http request fails
         cursor = self.connection.cursor()
         # Non-Select statements return an empty list, otherwise select statement will return the query results as a list
         result = cursor.execute(SQLStatement, placeholderValues).fetchall() if not IsScript else cursor.executescript(SQLStatement).fetchall()
@@ -96,11 +95,12 @@ class baseSQL:
             case sqlite3.SQLITE_ALTER_TABLE:
                 return sqlite3.SQLITE_DENY
             # Miscellaneous actions
-            case sqlite3.SQLITE_PRAGMA | sqlite3.SQLITE_ATTACH | sqlite3.SQLITE_DETACH | sqlite3.SQLITE_REINDEX | sqlite3.SQLITE_ANALYZE | sqlite3.SQLITE_SAVEPOINT | sqlite3.SQLITE_RECURSIVE:
+            case sqlite3.SQLITE_PRAGMA | sqlite3.SQLITE_ATTACH | sqlite3.SQLITE_DETACH | sqlite3.SQLITE_REINDEX | sqlite3.SQLITE_ANALYZE | sqlite3.SQLITE_RECURSIVE:
                 return sqlite3.SQLITE_DENY
             case sqlite3.SQLITE_DELETE:
                 # Prevent deletes in general as it is better to keep mistakes and correct using an update
                 # So that auditing can be done
                 return sqlite3.SQLITE_DENY
             case _:
+                # Savepoints are also included
                 return sqlite3.SQLITE_OK

@@ -11,7 +11,7 @@
     {% elif webAttributes.InputType == InputTypes.TEXTAREA.value %}
         <textarea form={{formId}} id={{inputId}} name={{webAttributes.InputAlias if webAttributes.InputAlias else sqlColumnName}} spellcheck="true" autocomplete="on" wrap={{webAttributes.wrap}} {{"required" if webAttributes.requiredInput}}>{{value if value is not none and value is defined}}</textarea>
     {% else %}
-        <input type={{webAttributes.InputType}} form={{formId}} spellcheck="true" autocomplete="on" {{"min=" ~ webAttributes.MinMaxStep[0] ~ " max=" ~ webAttributes.MinMaxStep[1] ~ " step=" ~ webAttributes.MinMaxStep[2] if webAttributes.MinMaxStep}} id={{inputId}} name={{webAttributes.InputAlias if webAttributes.InputAlias else sqlColumnName}} {{"required" if webAttributes.requiredInput}} {{"value=" ~ value if value is not none and value is defined}} />
+        <input type={{webAttributes.InputType}} form={{formId}} spellcheck="true" autocomplete="on" {{"min=" ~ webAttributes.MinMaxStep[0] ~ " max=" ~ webAttributes.MinMaxStep[1] ~ " step=" ~ webAttributes.MinMaxStep[2] if webAttributes.MinMaxStep}} id={{inputId}} name={{webAttributes.InputAlias if webAttributes.InputAlias else sqlColumnName}} {{"required" if webAttributes.requiredInput}} {{("value=" ~ value) if value is not none and value is defined}} />
     {% endif %}
 {% endmacro %}
 
@@ -60,7 +60,7 @@
     {% endcall %}
 {% endmacro %}
 
-{% macro generateTableEntryForm(formID, tableColumnsAndAttributes, prefilltabledata) %}
+{% macro generateTableEntryForm(formID, tableColumnsAndAttributes, prefilltabledata, includeEmptyRow=true) %}
     {% call(formId) generateFormForTable(formID, tableColumnsAndAttributes, "Add Grouped Entry") %}
         {% set tableCellIdPrefix = "_inputheader" %}
         <table id={{formID ~ "_tableform"}}>
@@ -72,17 +72,24 @@
                 </tr>
             </thead>
             <tbody>
-                {% set tableRowSize = prefilltabledata | length + 1%}
+                {% set prefilltablesize = prefilltabledata | length %}
+                {% set tableRowSize = prefilltablesize + (1 if includeEmptyRow else 0) %}
                 {% for index in range(tableRowSize) %}
                     <tr>
                         {% set parentLoop = loop %}
                         {% call(columnName, webAttrs, id) _renderInputRelatedElements(tableColumnsAndAttributes) %}
                             {% if not webAttrs.isGroupInput or (parentLoop.first and webAttrs.isGroupInput) %}
                                 <td headers={{columnName ~ tableCellIdPrefix}} {{"rowspan="~tableRowSize if parentLoop.first and webAttrs.isGroupInput}}>
-                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefilltabledata[index][columnName] if not loop.last, loop.last)}}
+                                    {% set prefillcelldata = prefilltabledata[index][columnName] if index + 1 <= prefilltablesize else None %}
+                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefillcelldata if prefillcelldata != "" else None, loop.last)}}
                                 </td>
                             {% endif %}
                         {% endcall %}
+                        <td>
+                            {% if prefilltabledata %}
+                                <button type="submit" name="DeleteRow" value={{index}} formnovalidate>Delete Row</button>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>

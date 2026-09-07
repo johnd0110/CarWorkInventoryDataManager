@@ -1,5 +1,6 @@
 #TODO: Implement refunded/returned items, refunds have been partially implemented already
 
+#TODO: Finish implementing general purpose items
 def create_and_initialize_app():
     """
     Initializes a Flask application with a car work inventory database.
@@ -10,6 +11,7 @@ def create_and_initialize_app():
 
     from .config import default_config
     new_app.config.from_object(default_config)
+    new_app.config.from_prefixed_env()
 
     from blueprints import web_car, web_home, web_purchase_data
     new_app.register_blueprint(web_car)

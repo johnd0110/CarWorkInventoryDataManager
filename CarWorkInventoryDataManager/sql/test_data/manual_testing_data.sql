@@ -1,5 +1,6 @@
 DELETE FROM PurchasesHistory;
 DELETE FROM WorkEfforts;
+DELETE FROM ItemsToCars
 DELETE FROM Items;
 DELETE FROM ItemGroupTransactions;
 DELETE FROM Cars;
@@ -61,68 +62,107 @@ VALUES (1, abs(RANDOM() % 1000)),
 
 -- Items Table Test Data
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 1, 3, 5, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (1, 1, 3, 5, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 1, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 1, NULL, 6, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (2, 1, NULL, 6, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 2, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 1, NULL, 7, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (3, 1, NULL, 7, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 3, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 2, 4, 8, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (4, 2, 4, 8, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 4, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 3, 5, 9, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (5, 3, 5, 9, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 5, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 4, 6, 10, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (6, 4, 6, 10, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 6, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 5, 7, 11, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (7, 5, 7, 11, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 7, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 5, NULL, 12, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (8, 5, NULL, 12, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 8, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 6, NULL, 13, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (9, 6, NULL, 13, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 9, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 7, NULL, 14, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (10, 7, NULL, 14, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 10, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 8, NULL, 15, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (11, 8, NULL, 15, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 11, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 9, NULL, 16, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (12, 9, NULL, 16, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 12, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 
-INSERT INTO Items(inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-SELECT carKey, 10, NULL, 17, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100)
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (13, 10, NULL, 17, abs(RANDOM() % 100), abs(RANDOM() % 100), abs(RANDOM() % 100), FALSE)
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+SELECT 13, carKey
 FROM Cars
 ORDER BY RANDOM() LIMIT 1;
 

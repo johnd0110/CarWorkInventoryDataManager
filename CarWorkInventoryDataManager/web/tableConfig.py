@@ -70,13 +70,16 @@ def setItemsTableAndInputConfig(itemssqlCNA, includeFooter=False):
 
     itemssqlCNA["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
+    itemssqlCNA["isGeneralPurpose"].decimalPlaces = -1
+    itemssqlCNA["isGeneralPurpose"].default = {0: "&#10005;", 1: "&#10003;"}
+
     setPurchasesTableAndInputConfig(itemssqlCNA)
 
     setValueEstimatesTableAndInputConfig(itemssqlCNA, includeFooter=includeFooter)
 
 def setValueEstimatesTableConfig(sqlCNA, includeFooter=False):
     sqlCNA["estimatedValue"].decimalPlaces = 2
-    sqlCNA["estimatedValue"].default = (None, "N/A")
+    sqlCNA["estimatedValue"].default = {None: "N/A"}
 
     if includeFooter:
         sqlCNA["estimatedValue"].footerTotalTextMapKey = "footerTotalEstimatedValue"
@@ -159,7 +162,7 @@ def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, emplo
     workeffortssqlCNA["workEffortDate"].InputType = InputTypes.DATE.value
     workeffortssqlCNA["workEffortDate"].requiredInput = True
     workeffortssqlCNA["workEffortDate"].MinMaxStep = (str(MINIMUM_SQL_DATE.date()), str(MAXIMUM_SQL_DATE.date()), "1")
-    workeffortssqlCNA["workEffortDate"].default = (str(MAXIMUM_SQL_DATE.date()), "N/A")
+    workeffortssqlCNA["workEffortDate"].default = {str(MAXIMUM_SQL_DATE.date()): "N/A"}
 
     workeffortssqlCNA["laborHours"].InputType = InputTypes.NUMBER.value
     workeffortssqlCNA["laborHours"].requiredInput = True

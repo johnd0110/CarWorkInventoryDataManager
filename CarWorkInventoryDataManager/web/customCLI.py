@@ -35,7 +35,7 @@ def initializeCWIDbSchema():
         CWIManagerFilePath = Path(__file__).parent.parent.resolve()
 
         from CarWorkInventoryDataManager.sql import CWIDatabaseFactory
-        setup_db = CWIDatabaseFactory(str(CWIManagerFilePath / "sql/databases/CWI_Database.db"))
+        setup_db = CWIDatabaseFactory(str(CWIManagerFilePath / current_app.config['DATABASE_URI']))
 
         # Disable authorizer to allow schema to be built out
         setup_db.connection.set_authorizer(None)

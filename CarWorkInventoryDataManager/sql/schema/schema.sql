@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS PurchasesHistory;
 DROP TABLE IF EXISTS WorkEfforts;
+DROP TABLE IF EXISTS ItemsToCars;
 DROP TABLE IF EXISTS Items;
 DROP TABLE IF EXISTS ItemGroupTransactions;
 DROP TABLE IF EXISTS Cars;
@@ -12,7 +13,7 @@ DROP TABLE IF EXISTS Sales;
 
 CREATE TABLE Cars(carKey INTEGER PRIMARY KEY,
                   purchaseKey INTEGER NOT NULL,
-                  valueEstimateKey INTEGER DEFAULT NULL, -- A car may or may not have a value estimate,
+                  valueEstimateKey INTEGER NOT NULL, -- A car may or may not have a value estimate
                   make TEXT NOT NULL,
                   model TEXT NOT NULL,
                   "year" NUMERIC NOT NULL,
@@ -20,12 +21,13 @@ CREATE TABLE Cars(carKey INTEGER PRIMARY KEY,
                   mileage INTEGER NOT NULL DEFAULT 0,
                   additionalNotes TEXT NOT NULL DEFAULT '',
                   FOREIGN KEY (purchaseKey) REFERENCES Purchases(purchaseKey) ON UPDATE RESTRICT ON DELETE RESTRICT,
-                  FOREIGN KEY (valueEstimateKey) REFERENCES ValueEstimates(valueEstimateKey) ON UPDATE RESTRICT ON DELETE SET NULL);
+                  FOREIGN KEY (valueEstimateKey) REFERENCES ValueEstimates(valueEstimateKey) ON UPDATE RESTRICT ON DELETE RESTRICT);
 
 CREATE TRIGGER verifyCarsForeignKeyUpdate
 BEFORE UPDATE OF purchaseKey, valueEstimateKey ON Cars
 FOR EACH ROW
-WHEN (OLD.purchaseKey != NEW.purchaseKey) OR (OLD.valueEstimateKey NOT NULL AND NEW.valueEstimateKey NOT NULL AND OLD.valueEstimateKey != NEW.valueEstimateKey)
+WHEN (EXISTS(SELECT 1 FROM Purchases p WHERE p.purchaseKey = NEW.purchaseKey) AND OLD.purchaseKey != NEW.purchaseKey) OR
+     (EXISTS(SELECT 1 FROM ValueEstimates ve WHERE ve.valueEstimateKey = NEW.valueEstimateKey) AND OLD.valueEstimateKey != NEW.valueEstimateKey)
 BEGIN
     -- In general, updating a foreign key should not happen
     -- as in most cases in this schema: foreign keys are a 1:1 relationship
@@ -51,28 +53,54 @@ END;
 CREATE TABLE ItemGroupTransactions(itemGroupTransactionKey INTEGER PRIMARY KEY,
                                    description TEXT NOT NULL);
 
+-- TODO: Create separate linking tables for items <-> cars | Also need to fix incarkey references
 CREATE TABLE Items(itemKey INTEGER PRIMARY KEY,
                    itemGroupTransactionKey INTEGER NOT NULL,
                    purchaseKey INTEGER NOT NULL,
-                   inCarKey INTEGER, -- An item could be orphaned as it may be used across multiple projects or was unused
-                   valueEstimateKey INTEGER DEFAULT NULL, --An item may or may not have a value estimate
+                   valueEstimateKey INTEGER NOT NULL,
                    source TEXT NOT NULL DEFAULT '',
                    itemName TEXT NOT NULL,
                    additionalNotes TEXT NOT NULL DEFAULT '',
-                   FOREIGN KEY (inCarKey) REFERENCES Cars(carKey) ON UPDATE RESTRICT ON DELETE RESTRICT,
-                   FOREIGN KEY (itemGroupTransactionKey) REFERENCES ItemGroupTransactions(itemGroupTransactionKey) ON UPDATE RESTRICT ON DELETE SET NULL,
-                   FOREIGN KEY (valueEstimateKey) REFERENCES ValueEstimates(valueEstimateKey) ON UPDATE RESTRICT ON DELETE SET NULL,
+                   isGeneralPurpose BOOLEAN NOT NULL DEFAULT FALSE,
+                   FOREIGN KEY (itemGroupTransactionKey) REFERENCES ItemGroupTransactions(itemGroupTransactionKey) ON UPDATE RESTRICT ON DELETE RESTRICT,
+                   FOREIGN KEY (valueEstimateKey) REFERENCES ValueEstimates(valueEstimateKey) ON UPDATE RESTRICT ON DELETE RESTRICT,
                    FOREIGN KEY (purchaseKey) REFERENCES Purchases(purchaseKey) ON UPDATE RESTRICT ON DELETE RESTRICT);
 
 CREATE TRIGGER verifyItemsForeignKeyUpdate
 BEFORE UPDATE OF itemGroupTransactionKey, valueEstimateKey, purchaseKey ON Items
 FOR EACH ROW
-WHEN (OLD.itemGroupTransactionKey != NEW.itemGroupTransactionKey) OR (OLD.valueEstimateKey NOT NULL AND NEW.valueEstimateKey NOT NULL AND OLD.valueEstimateKey != NEW.valueEstimateKey) OR OLD.purchaseKey != NEW.purchaseKey
+WHEN (EXISTS(SELECT 1 FROM itemGroupTransactions igt WHERE igt.itemGroupTransactionKey = NEW.itemGroupTransactionKey) AND OLD.itemGroupTransactionKey != NEW.itemGroupTransactionKey) OR
+     (EXISTS(SELECT 1 FROM ValueEstimates ve WHERE ve.valueEstimateKey = NEW.valueEstimateKey) AND OLD.valueEstimateKey != NEW.valueEstimateKey) OR
+     (EXISTS(SELECT 1 FROM Purchases p WHERE p.purchaseKey = NEW.purchaseKey) AND OLD.purchaseKey != NEW.purchaseKey)
 BEGIN
     -- Refer to trigger verifyCarsForeignKeyUpdate for reasoning
     SELECT RAISE(ABORT, CONCAT('Updates to the items foreign keys are not allowed. They should only be done by people who know what they are doing.'));
 END;
 
+CREATE TABLE ItemsToCars(itemKey INTEGER NOT NULL,
+                         carKey INTEGER NOT NULL,
+                         PRIMARY KEY (itemKey, carKey),
+                         FOREIGN KEY (itemKey) REFERENCES Items(itemKey) ON UPDATE RESTRICT ON DELETE RESTRICT,
+                         FOREIGN KEY (carKey) REFERENCES Cars(carKey) ON UPDATE RESTRICT ON DELETE RESTRICT);
+
+CREATE TRIGGER verifyItemsToCarForeignKeyUpdate
+BEFORE UPDATE ON ItemsToCars
+FOR EACH ROW
+WHEN (EXISTS(SELECT 1 FROM Items itm WHERE itm.itemKey = NEW.itemKey) AND OLD.itemKey != NEW.itemKey) OR
+     (EXISTS(SELECT 1 FROM Cars c WHERE c.carKey = NEW.carKey) AND OLD.carKey != NEW.carKey)
+BEGIN
+    -- Refer to trigger verifyCarsForeignKeyUpdate for reasoning
+    SELECT RAISE(ABORT, CONCAT('Updates to the ItemsToCars foreign keys are not allowed. They should only be done by people who know what they are doing.'));
+END;
+
+CREATE TRIGGER verifyGeneralPurposeItemMultiCarLink
+BEFORE INSERT ON ItemsToCars
+FOR EACH ROW
+WHEN EXISTS(SELECT 1 FROM ItemsToCars WHERE itemKey = NEW.itemKey)
+BEGIN
+    SELECT RAISE(ABORT, CONCAT('Item Key: ', NEW.itemKey, ' is not general purpose, cannot be associated to more than one car.'))
+    WHERE EXISTS(SELECT 1 FROM Items WHERE itemKey = NEW.itemKey AND isGeneralPurpose = FALSE);
+END;
 
 -- Table for holding purchase data of an item
 -- An item may be something like a car row or a item row

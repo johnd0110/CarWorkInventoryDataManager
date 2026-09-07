@@ -48,11 +48,11 @@
         <td headers={{columnName ~ tableColumnIdSuffix}}>
             {% set value = columnValueDict[columnName] %}
             {% if columnAttributes.HasValidUrlData() %}
-                <a href={{url_for(columnAttributes.urlData[0], keyorid=columnValueDict[columnAttributes.urlData[2]])}}>
+                <a href={{url_for(columnAttributes.urlData[0], key=columnValueDict[columnAttributes.urlData[2]])}}>
                     {{columnAttributes.urlData[1] if not value else value }}
                 </a>
             {% else %}
-                {{_decimalFormatString.format(value, columnAttributes.decimalPlaces) if value is number else (value if columnAttributes.default[0] != value else columnAttributes.default[1])}}
+                {{_decimalFormatString.format(value, columnAttributes.decimalPlaces) if columnAttributes.decimalPlaces is ge 0 and value is number else (value if columnAttributes.default is none or value not in columnAttributes.default else (columnAttributes.default[value] | safe))}}
             {% endif %}
         </td>
     {% endmacro %}

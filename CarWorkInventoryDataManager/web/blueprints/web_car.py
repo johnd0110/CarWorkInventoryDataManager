@@ -1,39 +1,58 @@
 # External Libraries or built-in Python libraries
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, redirect, url_for, request, Response, session
 
 # Modules / packages in this project
 from tableConfig import setWorkEffortsByCarWithEmployeesTableAndInputConfig, setItemsTableAndInputConfig, setCarsTableAndInputConfig, setCarsTableConfig, setPurchasesTableConfig, setValueEstimatesTableConfig, setItemGroupTransactionTableAndInputConfig
-from db import get_CWI_db
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
+from viewclasses import getPostKeyViewBase
 
 web_car = Blueprint('web_car', __name__, url_prefix='/car')
 
-@web_car.route('items/<int:keyorid>', methods=["GET", "POST"], endpoint="car_items")
-@web_car.route('item-groups/<int:keyorid>', methods=["GET", "POST"], endpoint="car_igt")
-def car_page(keyorid):
-    sqlapp = get_CWI_db()
+class carView(getPostKeyViewBase):
+    def GET_Handler(self, key) -> dict:
+        carssqlres = self.sqlapp.getCarByKey(key)
+        setCarsTableConfig(carssqlres[1])
+        setPurchasesTableConfig(carssqlres[1], includeFooter=False)
+        setValueEstimatesTableConfig(carssqlres[1])
 
-    igtFormTablePreFillData = []
-    if request.method == "POST":
-        match request.form["formid"].lower():
+        itemssqlresult = self.sqlapp.getItemsForCar(key)
+        setItemsTableAndInputConfig(itemssqlresult[1], True)
+
+        igtsqlres = self.sqlapp.getItemsAndItemGroupTransactionsForCar(key)
+        setItemGroupTransactionTableAndInputConfig(igtsqlres[1])
+
+        workeffortssqlresults = self.sqlapp.getWorkEffortByCarWithEmployees(key)
+        setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
+                                                            self.sqlapp.getEmployees()[0])
+
+        return {"carssqlres": carssqlres,
+                "itemssqlres": itemssqlresult,
+                "igtsqlres": igtsqlres,
+                "workeffortssqlres": workeffortssqlresults,
+                "igtFormTablePreFillData": self.viewSessionData.get("igtFormTablePreFillData", []),
+                "igtFormTableIncludeNewRow": self.viewSessionData.get("igtFormTableIncludeNewRow", True)}
+
+    def POST_Handler(self, key) -> Response:
+        redirectLocation = ''
+        form = lowerCaseKeyDict(request.form.to_dict())
+        match form["formid"].lower():
             case "items_form":
-                req_form_dict = lowerCaseKeyDict(request.form)
-                req_form_dict['incarkey'] = keyorid
-                req_form_dict['itemgroupdescription'] = ""
-                _ = sqlapp.insertSingleItem(req_form_dict)
-                return redirect(url_for('.car_items', keyorid=keyorid))
+                form['carkey'] = key
+                form['itemgroupdescription'] = ""
+                _ = self.sqlapp.insertSingleItem(form)
+                redirectLocation = '.car_items'
             case "workefforts_form":
-                req_form_dict = lowerCaseKeyDict(request.form)
-                req_form_dict['carKeyWorkedOn'] = keyorid
-                _ = sqlapp.insertWorkEffort(req_form_dict)
-                return redirect(url_for(request.endpoint, keyorid=keyorid))
+                form['carKeyWorkedOn'] = key
+                _ = self.sqlapp.insertWorkEffort(form)
+                redirectLocation = request.endpoint
             case "igt_form":
-                req_form_dict = lowerCaseKeyDict(request.form.to_dict(flat=False))
+                form = lowerCaseKeyDict(request.form.to_dict(flat=False))
+                print(form)
                 tableData = []
-                for columnName, valueList in req_form_dict.items():
-                    if columnName in ('addnewrow', 'formid'):
+                for columnName, valueList in form.items():
+                    if columnName in ('addnewrow', 'deleterow', 'formid'):
                         continue
-
+                    print(columnName, valueList)
                     for index, value in enumerate(valueList):
                         if len(tableData) <= index:
                             tableData.append(lowerCaseKeyDict({columnName: value}))
@@ -43,62 +62,75 @@ def car_page(keyorid):
                                     f"Unexpected Error: {columnName} already exists at row dictionary index: {index}")
                             tableData[index][columnName] = value
 
-                if 'addnewrow' in req_form_dict:
-                    igtFormTablePreFillData = tableData
-                elif 'submit' in req_form_dict:
-                    for itemDict in tableData:
-                        itemDict['incarkey'] = keyorid
+                redirectLocation = '.car_igt'
+                if ('addnewrow' in form) ^ ('deleterow' in form):
+                    # Convert lowercasekeydict to regular dictionaries for serialization
+                    tableDataForSession = [rowdata.data for ind, rowdata in enumerate(tableData) if (int(form.get('deleterow', [-1])[0]) != ind)]
+                    noSessionTableDataExists = len(tableDataForSession) == 0
+                    if not noSessionTableDataExists:
+                        # Shift the itemgroupdescription to the next row
+                        igtDescription = None
+                        for row in tableData:
+                            if 'itemgroupdescription' in row:
+                                igtDescription = row.pop('itemgroupdescription')
 
-                    _ = sqlapp.insertMultipleItems(tableData)
-                    return redirect(url_for('.car_igt', keyorid=keyorid))
+                        if igtDescription is None:
+                            raise RuntimeError(
+                                "Unexpected Error: No Item group description found while adding or deleting a row.")
+
+                        tableDataForSession[0]['itemgroupdescription'] = igtDescription
+                    # else Last row was deleted, therefore just let the table reset
+
+                    self.viewSessionData["igtFormTablePreFillData"] = tableDataForSession
+                    self.viewSessionData["igtFormTableIncludeNewRow"] = ('addnewrow' in form) or noSessionTableDataExists
+                    session.modified = True
+                elif 'submit' in form:
+                    itemDictWithIgtDescriptionIndex = None
+                    for index, itemDict in enumerate(tableData):
+                        itemDict['carkey'] = key
+                        if "itemgroupdescription" in itemDict:
+                            if itemDictWithIgtDescriptionIndex is not None:
+                                raise RuntimeError("Unexpected Error: Additional Item Group Transaction Item Row with a description found.")
+                            itemDictWithIgtDescriptionIndex = index
+
+                    # Make sure the row with the item group description is at the start of the list.
+                    if itemDictWithIgtDescriptionIndex is None:
+                        raise RuntimeError("Unexpected Error: No Item group transaction description found on form submission.")
+
+                    tableData.insert(0, tableData.pop(itemDictWithIgtDescriptionIndex))
+
+                    _ = self.sqlapp.insertMultipleItems(tableData)
+                    _ = self.viewSessionData.pop('igtFormTablePreFillData', None)
+                    _ = self.viewSessionData.pop('igtFormTableIncludeNewRow', None)
+                    session.modified = True
                 else:
                     raise NotImplementedError
             case _:
                 raise NotImplementedError
 
-    carssqlres = sqlapp.getCarByKey(keyorid)
-    setCarsTableConfig(carssqlres[1])
-    setPurchasesTableConfig(carssqlres[1], includeFooter=False)
-    setValueEstimatesTableConfig(carssqlres[1])
+        return redirect(url_for(redirectLocation, key=key, _anchor=request.form["formid"].lower()))
 
-    itemssqlresult = sqlapp.getItemsForCar(keyorid)
-    setItemsTableAndInputConfig(itemssqlresult[1], True)
+class carEditView(getPostKeyViewBase):
+    def GET_Handler(self, key) -> dict:
+        carsSqlResult = self.sqlapp.getCarByKey(key)
+        setCarsTableAndInputConfig(carsSqlResult[1], includeFooter=False, includePurchaseData=False)
 
-    igtsqlres = sqlapp.getItemsAndItemGroupTransactionsForCar(keyorid)
-    setItemGroupTransactionTableAndInputConfig(igtsqlres[1])
+        return {"tablesqlres": carsSqlResult,
+                "formId": "edit_car",
+                "legendText": "Edit Car Entry",
+                "prefillData": carsSqlResult[0][0]}
 
-    workeffortssqlresults = sqlapp.getWorkEffortByCarWithEmployees(keyorid)
-    setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
-                                                        sqlapp.getEmployees()[0])
-
-    return render_template("car_view.html",
-                           carssqlres=carssqlres,
-                           itemssqlres=itemssqlresult,
-                           igtsqlres=igtsqlres,
-                           workeffortssqlres=workeffortssqlresults,
-                           igtFormTablePreFillData=igtFormTablePreFillData)
-
-@web_car.route('/edit/<int:keyorid>', methods=["GET", "POST"], endpoint="car_edit")
-def car_edit_page(keyorid):
-    # Opted for a separate web page as opposed to a modal from the main web page as this solution is easy to implement and will work for pretty much anyone
-    # Where as a modal would most likely need javascript and javascript could be disabled for various reasons thus requiring more handling being implemented
-    sqlapp = get_CWI_db()
-
-    if request.method == "POST":
-        req_form_dict = lowerCaseKeyDict(request.form)
-        match request.form["formid"].lower():
+    def POST_Handler(self, key) -> Response:
+        form = lowerCaseKeyDict(request.form.to_dict())
+        match form["formid"].lower():
             case "edit_car_form":
-                req_form_dict['carkey'] = keyorid
-                _ = sqlapp.updateCarAndValueEstimate(req_form_dict)
-                return redirect(url_for('web_home.main_page'))
+                form['carkey'] = key
+                _ = self.sqlapp.updateCarAndValueEstimate(form)
             case _:
                 raise NotImplementedError
 
-    carsSqlResult = sqlapp.getCarByKey(keyorid)
-    setCarsTableAndInputConfig(carsSqlResult[1], includeFooter=False, includePurchaseData=False)
+        return redirect(url_for('web_home.main_page'))
 
-    return render_template("generic_table_form_view.html",
-                           tablesqlres=carsSqlResult,
-                           formId="edit_car",
-                           legendText="Edit Car Entry",
-                           prefillData=carsSqlResult[0][0])
+web_car.add_url_rule('items/<int:key>', endpoint="car_items", view_func=carView.as_view("car_page", "car_view.html", "car"))
+web_car.add_url_rule('item-groups/<int:key>', endpoint="car_igt", view_func=carView.as_view("car_page", "car_view.html", "car"))
+web_car.add_url_rule('/edit/<int:key>', endpoint="car_edit", view_func=carEditView.as_view("car_edit_page", "generic_table_form_view.html", "car_edit"))

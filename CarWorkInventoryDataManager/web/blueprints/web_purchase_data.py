@@ -1,31 +1,30 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, request, redirect, url_for, Response
 
-from db import get_CWI_db
 from tableConfig import setPurchaseHistoryTableConfig, setPurchasesInputConfig
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
+from viewclasses import getPostKeyViewBase
 
 web_purchase_data = Blueprint('web_purchase_data', __name__, url_prefix="/purchase")
 
-@web_purchase_data.route('history/<int:keyorid>', methods=["GET", "POST"])
-def purchase_data_page(keyorid):
-    sqlapp = get_CWI_db()
+class purchaseDataView(getPostKeyViewBase):
+    def GET_Handler(self, key) -> dict:
+        purchasehistorysqlres = self.sqlapp.getPurchaseHistoryAndCurrentPurchaseDataByKey(key)
+        setPurchaseHistoryTableConfig(purchasehistorysqlres[1])
+        setPurchasesInputConfig(purchasehistorysqlres[1])
 
-    if request.method == "POST":
-        req_form_dict = lowerCaseKeyDict(request.form)
-        match request.form["formid"].lower():
+        return {"tablesqlres": purchasehistorysqlres,
+                "formId": "editPurchaseData",
+                "legendText": "Edit Purchase Data",
+                "prefillData": purchasehistorysqlres[0][-1]}
+
+    def POST_Handler(self, key) -> Response:
+        form = lowerCaseKeyDict(request.form.to_dict())
+        match form["formid"][0].lower():
             case "editpurchasedata_form":
-                req_form_dict['purchasekey'] = keyorid
-                _ = sqlapp.updatePurchaseData(req_form_dict)
-                return redirect(url_for('web_home.main_page'))
+                form['purchasekey'] = key
+                _ = self.sqlapp.updatePurchaseData(form)
             case _:
                 raise NotImplementedError
+        return redirect(url_for('web_home.main_page'))
 
-    purchasehistorysqlres = sqlapp.getPurchaseHistoryAndCurrentPurchaseDataByKey(keyorid)
-    setPurchaseHistoryTableConfig(purchasehistorysqlres[1])
-    setPurchasesInputConfig(purchasehistorysqlres[1])
-
-    return render_template("generic_table_form_view.html",
-                           tablesqlres=purchasehistorysqlres,
-                           formId="editPurchaseData",
-                           legendText="Edit Purchase Data",
-                           prefillData=purchasehistorysqlres[0][-1])
+web_purchase_data.add_url_rule('data/<int:key>', view_func=purchaseDataView.as_view('purchase_data_page', "generic_table_form_view.html", "purchase_data"))

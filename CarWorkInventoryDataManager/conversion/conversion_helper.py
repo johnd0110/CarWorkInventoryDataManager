@@ -34,12 +34,14 @@ class item:
     itemName: str = ''
     source: str = ''
     additionalNotes: str = ''
+    isGeneralPurpose: bool = False
 
     def serialize(self) -> lowerCaseKeyDict:
         return lowerCaseKeyDict({
                'source': self.source,
                'itemname': self.itemName,
-               'additionalnotes': self.additionalNotes}) | self.purchaseData.serialize() | self.valueEstimateData.serialize()
+               'additionalnotes': self.additionalNotes,
+                'isGeneralPurpose': self.isGeneralPurpose}) | self.purchaseData.serialize() | self.valueEstimateData.serialize()
 
     def IsComplete(self) -> bool:
         return bool(self.itemName)

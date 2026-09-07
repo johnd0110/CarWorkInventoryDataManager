@@ -41,6 +41,7 @@ class CWIFlaskAppTests(baseTestSuite):
             db.connection.set_authorizer(None)
             _ = db.executeSQLStatement("""DELETE FROM PurchasesHistory;
                                           DELETE FROM WorkEfforts;
+                                          DELETE FROM ItemsToCars;
                                           DELETE FROM Items;
                                           DELETE FROM ItemGroupTransactions;
                                           DELETE FROM Cars;
@@ -153,11 +154,11 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=refundamount_tablecolumn>10.00</td>
                             <td headers=purchasetotal_tablecolumn>-7.00</td>
                             <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
-                            <td headers=estimatedvalue_tablecolumn>0.00</td>
+                            <td headers=estimatedvalue_tablecolumn>N/A</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=1)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=1)}>Edit</a></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=1)}>View/Edit Purchase Data</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', key=1)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', key=1)}>Edit</a></td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=1)}>View/Edit Purchase Data</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>2</td>
@@ -173,11 +174,11 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=refundamount_tablecolumn>0.00</td>
                             <td headers=purchasetotal_tablecolumn>5000.00</td>
                             <td headers=totalinvestedvalue_tablecolumn>7866.00</td>
-                            <td headers=estimatedvalue_tablecolumn>0.00</td>
+                            <td headers=estimatedvalue_tablecolumn>N/A</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=2)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=2)}>Edit</a></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=2)}>View/Edit Purchase Data</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', key=2)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', key=2)}>Edit</a></td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=2)}>View/Edit Purchase Data</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>3</td>
@@ -195,9 +196,9 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=totalinvestedvalue_tablecolumn>20620.37</td>
                             <td headers=estimatedvalue_tablecolumn>50000.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=3)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=3)}>Edit</a></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=3)}>View/Edit Purchase Data</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', key=3)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', key=3)}>Edit</a></td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=3)}>View/Edit Purchase Data</a></td>
                         </tr>                        
                         <tr>
                             <td headers=carkey_tablecolumn>4</td>
@@ -215,9 +216,9 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=totalinvestedvalue_tablecolumn>-1.00</td>
                             <td headers=estimatedvalue_tablecolumn>3000.00</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', keyorid=4)}>View</a></td>
-                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', keyorid=4)}>Edit</a></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=4)}>View/Edit Purchase Data</a></td>
+                            <td headers=viewlink_tablecolumn><a href={url_for('web_car.car_items', key=4)}>View</a></td>
+                            <td headers=editlink_tablecolumn><a href={url_for('web_car.car_edit', key=4)}>Edit</a></td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=4)}>View/Edit Purchase Data</a></td>
                         </tr>
                     </tbody>
                     <tfoot>
@@ -398,9 +399,9 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=refundamount_tablecolumn>10.00</td>
                             <td headers=purchasetotal_tablecolumn>-7.00</td>
                             <td headers=totalinvestedvalue_tablecolumn>6501.00</td>
-                            <td headers=estimatedvalue_tablecolumn>0.00</td>
+                            <td headers=estimatedvalue_tablecolumn>N/A</td>
                             <td headers=additionalnotes_tablecolumn>test</td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=1)}>View/Edit Purchase Data</a></td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=1)}>View/Edit Purchase Data</a></td>
                         </tr>                        
                     </tbody>
                 </table>
@@ -425,11 +426,12 @@ class CWIFlaskAppTests(baseTestSuite):
                         <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
                         <col span="1" style=visibility:initial>
+                        <col span="1" style=visibility:initial>
                     </colgroup>
                     <thead>
                         <tr>
                             <th scope="col" id=itemkey_tablecolumn></th>
-                            <th scope="col" id=incarkey_tablecolumn></th>
+                            <th scope="col" id=carkey_tablecolumn></th>
                             <th scope="col" id=source_tablecolumn>Item Source</th>
                             <th scope="col" id=itemname_tablecolumn>Item Name</th>
                             <th scope="col" id=purchasekey_tablecolumn></th>
@@ -440,13 +442,14 @@ class CWIFlaskAppTests(baseTestSuite):
                             <th scope="col" id=purchasetotal_tablecolumn>PurchaseTotal(USD)</th>
                             <th scope="col" id=estimatedvalue_tablecolumn>EstimatedActualValue(USD)</th>
                             <th scope="col" id=additionalnotes_tablecolumn>AdditionalNotes</th>
+                            <th scope="col" id=isgeneralpurpose_tablecolumn>GeneralPurpose</th>
                             <th scope="col" id=vieweditpurchasedatalink_tablecolumn></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td headers=itemkey_tablecolumn>1</td>
-                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=carkey_tablecolumn>1</td>
                             <td headers=source_tablecolumn>store</td>
                             <td headers=itemname_tablecolumn>engine</td>
                             <td headers=purchasekey_tablecolumn>5</td>
@@ -457,11 +460,12 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=purchasetotal_tablecolumn>1200.00</td>
                             <td headers=estimatedvalue_tablecolumn>1000.00</td>
                             <td headers=additionalnotes_tablecolumn></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=5)}>View/Edit Purchase Data</a></td>
+                            <td headers=isgeneralpurpose_tablecolumn>&#10005;</td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=5)}>View/Edit Purchase Data</a></td>
                         </tr>              
                         <tr>
                             <td headers=itemkey_tablecolumn>2</td>
-                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=carkey_tablecolumn>1</td>
                             <td headers=source_tablecolumn>store</td>
                             <td headers=itemname_tablecolumn>alternator</td>
                             <td headers=purchasekey_tablecolumn>6</td>
@@ -472,11 +476,12 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=purchasetotal_tablecolumn>80.00</td>
                             <td headers=estimatedvalue_tablecolumn>N/A</td>
                             <td headers=additionalnotes_tablecolumn></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=6)}>View/Edit Purchase Data</a></td>
+                            <td headers=isgeneralpurpose_tablecolumn>&#10005;</td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=6)}>View/Edit Purchase Data</a></td>
                         </tr>              
                         <tr>
                             <td headers=itemkey_tablecolumn>3</td>
-                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=carkey_tablecolumn>1</td>
                             <td headers=source_tablecolumn>store</td>
                             <td headers=itemname_tablecolumn>spark plug</td>
                             <td headers=purchasekey_tablecolumn>7</td>
@@ -487,11 +492,12 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=purchasetotal_tablecolumn>24.00</td>
                             <td headers=estimatedvalue_tablecolumn>N/A</td>
                             <td headers=additionalnotes_tablecolumn></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=7)}>View/Edit Purchase Data</a></td>
+                            <td headers=isgeneralpurpose_tablecolumn>&#10005;</td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=7)}>View/Edit Purchase Data</a></td>
                         </tr>              
                         <tr>
                             <td headers=itemkey_tablecolumn>4</td>
-                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=carkey_tablecolumn>1</td>
                             <td headers=source_tablecolumn>store</td>
                             <td headers=itemname_tablecolumn>tire</td>
                             <td headers=purchasekey_tablecolumn>8</td>
@@ -502,11 +508,12 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=purchasetotal_tablecolumn>24.00</td>
                             <td headers=estimatedvalue_tablecolumn>123.00</td>
                             <td headers=additionalnotes_tablecolumn></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=8)}>View/Edit Purchase Data</a></td>
+                            <td headers=isgeneralpurpose_tablecolumn>&#10005;</td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=8)}>View/Edit Purchase Data</a></td>
                         </tr>              
                         <tr>
                             <td headers=itemkey_tablecolumn>5</td>
-                            <td headers=incarkey_tablecolumn>1</td>
+                            <td headers=carkey_tablecolumn>1</td>
                             <td headers=source_tablecolumn>store</td>
                             <td headers=itemname_tablecolumn>stereo</td>
                             <td headers=purchasekey_tablecolumn>9</td>
@@ -517,7 +524,8 @@ class CWIFlaskAppTests(baseTestSuite):
                             <td headers=purchasetotal_tablecolumn>180.00</td>
                             <td headers=estimatedvalue_tablecolumn>6.00</td>
                             <td headers=additionalnotes_tablecolumn></td>
-                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', keyorid=9)}>View/Edit Purchase Data</a></td>
+                            <td headers=isgeneralpurpose_tablecolumn>&#10005;</td>
+                            <td headers=vieweditpurchasedatalink_tablecolumn><a href={url_for('web_purchase_data.purchase_data_page', key=9)}>View/Edit Purchase Data</a></td>
                         </tr>              
                     </tbody>
                     <tfoot>
@@ -525,13 +533,13 @@ class CWIFlaskAppTests(baseTestSuite):
                             <th colspan=9 scope=col></th>
                             <th colspan=1 scope=col id=footerTotalSpent_tablecolumn>Total Spent (USD)</th>                    
                             <th colspan=1 scope=col id=footerTotalEstimatedValue_tablecolumn>Total Estimated Value (USD)</th>
-                            <th colspan=2 scope=col></th>
+                            <th colspan=3 scope=col></th>
                         </tr>
                         <tr>
                             <td colspan=9></td>
                             <td colspan=1 headers=footerTotalSpent_tablecolumn>1508.00</td>
                             <td colspan=1 headers=footerTotalEstimatedValue_tablecolumn>1129.00</td>
-                            <td colspan=2></td>
+                            <td colspan=3></td>
                         </tr>
                     </tfoot>
                 </table>

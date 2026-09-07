@@ -59,14 +59,18 @@ class carWorkInventorySQL(baseSQL):
                                                       (SELECT TOTAL(p.purchaseTotal)
                                                        FROM Items itm
                                                        JOIN purchases p
-                                                       ON itm.purchaseKey = p.purchaseKey 
-                                                       WHERE c.carKey = itm.inCarKey) + 
+                                                       ON itm.purchaseKey = p.purchaseKey
+                                                       JOIN ItemsToCars itc
+                                                       ON c.carKey = itc.carKey
+                                                       AND itm.itemKey = itc.itemKey) + 
                                                        (SELECT TOTAL(we.estimatedPay) 
                                                         FROM WorkEfforts we 
                                                         WHERE c.carKey = we.carKeyWorkedOn) + 
                                                       p.purchaseTotal AS [totalInvestedValue],
-                                                                
-                                                      COALESCE(ve.estimatedValue, 0) as estimatedValue, 
+                                                      CASE 
+                                                        WHEN ve.estimatedValue = 0 THEN NULL 
+                                                        ELSE ve.estimatedValue 
+                                                      END as estimatedValue, 
                                                       c.additionalNotes,
                                                       'View' as viewLink,
                                                       'Edit' as editLink,
@@ -95,14 +99,18 @@ class carWorkInventorySQL(baseSQL):
                                                                    (SELECT TOTAL(p.purchaseTotal)
                                                                     FROM Items itm
                                                                     JOIN purchases p
-                                                                    ON itm.purchaseKey = p.purchaseKey 
-                                                                    WHERE c.carKey = itm.inCarKey) + 
+                                                                    ON itm.purchaseKey = p.purchaseKey
+                                                                    JOIN ItemsToCars itc 
+                                                                    ON c.carKey = itc.carKey
+                                                                    AND itm.itemKey = itc.itemKey) + 
                                                                    (SELECT TOTAL(we.estimatedPay) 
                                                                     FROM WorkEfforts we 
                                                                     WHERE c.carKey = we.carKeyWorkedOn) + 
                                                                    p.purchaseTotal AS [totalInvestedValue], 
-                                                                   
-                                                                   COALESCE(ve.estimatedValue, 0) as estimatedValue,
+                                                                   CASE 
+                                                                     WHEN ve.estimatedValue = 0 THEN NULL 
+                                                                     ELSE ve.estimatedValue 
+                                                                   END as estimatedValue, 
                                                                    c.additionalNotes,
                                                                    'View/Edit Purchase Data' as viewEditPurchaseDataLink
                                                                    FROM Cars c
@@ -113,12 +121,12 @@ class carWorkInventorySQL(baseSQL):
                                                                    WHERE c.carKey = ?""",
                                             (carKey,))
 
-    @autoSetHiddenColumnsByNames(["itemGroupTransactionKey", "itemKey", "inCarKey", "purchaseKey"])
+    @autoSetHiddenColumnsByNames(["itemGroupTransactionKey", "itemKey", "carKey", "purchaseKey"])
     def getItemsAndItemGroupTransactionsForCar(self, carKey) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT itg.itemGroupTransactionKey,
                                                                   itg.description as itemGroupDescription,
                                                                   itm.itemKey,
-                                                                  itm.inCarKey,
+                                                                  itc.carKey,
                                                                   itm.source,
                                                                   itm.itemName,
                                                                   p.purchaseKey,
@@ -127,23 +135,29 @@ class carWorkInventorySQL(baseSQL):
                                                                   p.cost,
                                                                   p.refundAmount,
                                                                   p.purchaseTotal,
-                                                                  COALESCE(ve.estimatedValue, 0) as estimatedValue,
+                                                                  CASE 
+                                                                    WHEN ve.estimatedValue = 0 THEN NULL 
+                                                                    ELSE ve.estimatedValue 
+                                                                  END as estimatedValue, 
                                                                   itm.additionalNotes,
+                                                                  itm.isGeneralPurpose,
                                                                   'View/Edit Purchase Data' as viewEditPurchaseDataLink
                                                                   FROM itemGroupTransactions itg
-                                                                  JOIN items itm 
+                                                                  JOIN Items itm 
                                                                   ON itg.itemGroupTransactionKey = itm.itemGroupTransactionKey
+                                                                  JOIN ItemsToCars itc
+                                                                  ON ? = itc.carKey
+                                                                  AND itm.itemKey = itc.itemKey
                                                                   JOIN Purchases p
                                                                   ON itm.purchaseKey = p.purchaseKey
                                                                   LEFT JOIN ValueEstimates ve
-                                                                  ON itm.valueEstimateKey = ve.valueEstimateKey
-                                                                  WHERE itm.inCarKey = ?""",
+                                                                  ON itm.valueEstimateKey = ve.valueEstimateKey""",
                                             (carKey,))
 
-    @autoSetHiddenColumnsByNames(["itemKey", "inCarKey", "purchaseKey"])
+    @autoSetHiddenColumnsByNames(["itemKey", "carKey", "purchaseKey"])
     def getItemsForCar(self, carKey: int) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("""SELECT itm.itemKey, 
-                                                                  itm.inCarKey,
+                                                                  itc.carKey,
                                                                   itm.source, 
                                                                   itm.itemName,
                                                                   p.purchaseKey, 
@@ -152,17 +166,54 @@ class carWorkInventorySQL(baseSQL):
                                                                   p.cost,
                                                                   p.refundAmount,
                                                                   p.purchaseTotal,
-                                                                  ve.estimatedValue,
+                                                                  CASE 
+                                                                    WHEN ve.estimatedValue = 0 THEN NULL 
+                                                                    ELSE ve.estimatedValue 
+                                                                  END as estimatedValue, 
                                                                   itm.additionalNotes,
+                                                                  itm.isGeneralPurpose,
                                                                   'View/Edit Purchase Data' as viewEditPurchaseDataLink 
                                                                   FROM Items itm
+                                                                  JOIN ItemsToCars itc
+                                                                  ON ? = itc.carKey
+                                                                  AND itm.itemKey = itc.itemKey
                                                                   JOIN Purchases p
                                                                   ON itm.purchaseKey = p.purchaseKey
                                                                   LEFT JOIN ValueEstimates ve
-                                                                  ON itm.valueEstimateKey = ve.valueEstimateKey 
-                                                                  WHERE itm.inCarKey = ?""",
+                                                                  ON itm.valueEstimateKey = ve.valueEstimateKey""",
                                             placeholderValues=(carKey,))
 
+    @autoSetHiddenColumnsByNames(["itemKey", "carKey", "purchaseKey"])
+    def getGeneralPurposeItemsAndLinkedCars(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT itm.itemKey,
+                                                      itm.source,
+                                                      itm.itemName,
+                                                      p.purchaseKey,
+                                                      p.taxesPaid,
+                                                      p.shippingCost,
+                                                      p.cost,
+                                                      p.refundAmount,
+                                                      p.purchaseTotal,
+                                                      CASE 
+                                                        WHEN ve.estimatedValue = 0 THEN NULL 
+                                                        ELSE ve.estimatedValue 
+                                                      END as estimatedValue, 
+                                                      itm.additionalNotes,
+                                                      'View/Edit Purchase Data' as viewEditPurchaseDataLink,
+                                                      c.carKey,
+                                                      c.make,
+                                                      c.model,
+                                                      c.year,
+                                                      c.engineType
+                                               FROM Items itm
+                                               JOIN ItemsToCars itc
+                                               ON itm.itemKey = itc.itemKey
+                                               JOIN Purchases p
+                                               ON itm.purchaseKey = p.purchaseKey
+                                               JOIN Cars c
+                                               ON itc.carKey = c.carKey
+                                               WHERE itm.isGeneralPurpose = TRUE""")
+    
     @autoSetHiddenColumnsByNames(["employeeKey"])
     def getEmployees(self) -> tuple[list, columnNamesAndAttributes | None]:
         return self.CWI_executeSQLStatement("SELECT employeeKey, employeeName FROM Employees")
@@ -227,20 +278,17 @@ class carWorkInventorySQL(baseSQL):
         :param valueEstimateDataValues: Value Estimate data values as a dictionary of column names: values
         :return: Nothing, the data values argument gets updated with the returned key
         """
-        valueEstimateKeyColumnName = "valueEstimateKey"
         estimatedValueColumnName = 'estimatedValue'
-        if valueEstimateDataValues.get(estimatedValueColumnName, None):
-
-            valueEstimateKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO ValueEstimates(estimatedValue)
-                                                                                    VALUES (:estimatedvalue)
-                                                                                    RETURNING valueEstimateKey
-                                                                                    """,
-                                                                     valueEstimateDataValues.data,
-                                                                     False,
-                                                                     keepTransactionOpen=True)
-            valueEstimateDataValues[valueEstimateKeyColumnName] = valueEstimateKeyResult[0][valueEstimateKeyColumnName]
-        else:
-            valueEstimateDataValues[valueEstimateKeyColumnName] = None
+        valueEstimateDataValues[estimatedValueColumnName] = valueEstimateDataValues.get(estimatedValueColumnName, 0)
+        valueEstimateKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO ValueEstimates(estimatedValue)
+                                                                                VALUES (:estimatedvalue)
+                                                                                RETURNING valueEstimateKey
+                                                                                """,
+                                                                 valueEstimateDataValues.data,
+                                                                 False,
+                                                                 keepTransactionOpen=True)
+        valueEstimateKeyColumnName = "valueEstimateKey"
+        valueEstimateDataValues[valueEstimateKeyColumnName] = valueEstimateKeyResult[0][valueEstimateKeyColumnName]
 
     def _insertItemGroupTransactionWithOpenTransaction(self, itemGroupTransactionDataValues: lowerCaseKeyDict):
         itemGroupTransactionKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO ItemGroupTransactions(description)
@@ -251,6 +299,13 @@ class carWorkInventorySQL(baseSQL):
                                                                         keepTransactionOpen=True)
         itemGroupTransactionKeyColumnName = "itemGroupTransactionKey"
         itemGroupTransactionDataValues[itemGroupTransactionKeyColumnName] = itemGroupTransactionKeyResult[0][itemGroupTransactionKeyColumnName]
+
+    def _insertItemToCarLinkWithOpenTransaction(self, itemToCarLinkDataValues: lowerCaseKeyDict):
+        itemToCarKeyResult, _ = self.CWI_executeSQLStatement("""INSERT INTO ItemsToCars(itemKey, carKey)
+                                                                VALUES (:itemkey, :carkey)""",
+                                                             itemToCarLinkDataValues.data,
+                                                             False,
+                                                             keepTransactionOpen=True)
 
     def insertCar(self, carDataValues: lowerCaseKeyDict):
         """
@@ -277,7 +332,12 @@ class carWorkInventorySQL(baseSQL):
                                             employeeDataValues.data,
                                             False)
 
-    def insertSingleItem(self, itemDataValues: lowerCaseKeyDict, keepTransactionOpen: bool = False):
+    def insertSingleItem(self, itemDataValues: lowerCaseKeyDict, defaultNotGeneralPurpose = True, keepTransactionOpen: bool = False):
+        if defaultNotGeneralPurpose:
+            if itemDataValues.get('isGeneralPurpose', None) is not None:
+                raise ValueError("Unexpected Error: General Purpose value exists, expected no general purpose to be set.")
+            itemDataValues['isGeneralPurpose'] = False
+
         if itemDataValues.get('purchaseKey') is not None:
             raise ValueError(f'Cannot insert item linked to an existing purchase key.')
 
@@ -293,22 +353,34 @@ class carWorkInventorySQL(baseSQL):
         if itemDataValues.get('itemGroupTransactionKey') is None:
             self._insertItemGroupTransactionWithOpenTransaction(itemDataValues)
 
-        return self.CWI_executeSQLStatement("""INSERT INTO Items(itemGroupTransactionKey, purchaseKey, valueEstimateKey, inCarKey, itemName, source, additionalNotes) 
-                                                           VALUES (:itemgrouptransactionkey, :purchasekey, :valueestimatekey, :incarkey, :itemname, :source, :additionalnotes)
-                                                           RETURNING itemKey""",
-                                            itemDataValues.data,
-                                            False,
-                                            keepTransactionOpen)
+        itemKeyResult = self.CWI_executeSQLStatement("""INSERT INTO Items(itemGroupTransactionKey, purchaseKey, valueEstimateKey, itemName, source, additionalNotes, isGeneralPurpose) 
+                                                                       VALUES (:itemgrouptransactionkey, :purchasekey, :valueestimatekey, :itemname, :source, :additionalnotes, :isgeneralpurpose)
+                                                                       RETURNING itemKey""",
+                                                        itemDataValues.data,
+                                                        False,
+                                                        keepTransactionOpen)
 
-    def insertMultipleItems(self, multiItemDataValues: list[lowerCaseKeyDict]):
+        if itemDataValues.get('carKey') is not None:
+            itemDataValues["itemKey"] = itemKeyResult[0][0]["itemKey"]
+            self._insertItemToCarLinkWithOpenTransaction(itemDataValues)
+
+        return itemKeyResult
+
+    def insertMultipleItems(self, multiItemDataValues: list[lowerCaseKeyDict], canHaveGeneralPurpose: bool = False):
         itemGroupTransactionKey = None
         for index, itemDataValues in enumerate(multiItemDataValues):
             if itemGroupTransactionKey is not None:
                 itemDataValues["itemgrouptransactionkey"] = itemGroupTransactionKey
+            else:
+                # Made it to other items without creating an item group transaction
+                # This is not allowed in this method, we should be creating an item group transaction on the first item
+                # so that subsequent items are added to the same item group transaction
+                if index != 0:
+                    raise ValueError("Failed to insert item group: First item should have an item group description element.")
 
             # Keep transaction open until the last item
             # When the last item is inserted, we commit the whole transaction to the database.
-            self.insertSingleItem(itemDataValues, index < len(multiItemDataValues) - 1)
+            self.insertSingleItem(itemDataValues, not canHaveGeneralPurpose, index < len(multiItemDataValues) - 1)
 
             if index == 0:
                 itemGroupTransactionKey = itemDataValues["itemgrouptransactionkey"]
@@ -340,14 +412,15 @@ class carWorkInventorySQL(baseSQL):
 
         valueEstimateKeyColumnName = "valueEstimateKey"
         if parentKeysToUpdateResult[0][valueEstimateKeyColumnName]:
-            #TODO: If no estimated value set then delete value estimate row and set car value estimate key to null
-            carDataValues[valueEstimateKeyColumnName] = parentKeysToUpdateResult[0][valueEstimateKeyColumnName]
-            _ = self.CWI_executeSQLStatement("""UPDATE ValueEstimates
-                                                            SET estimatedValue = :estimatedvalue
-                                                            WHERE valueEstimateKey = :valueestimatekey""",
-                                             carDataValues.data,
-                                             False,
-                                             True)
+            if carDataValues["estimatedvalue"] is not None:
+                carDataValues[valueEstimateKeyColumnName] = parentKeysToUpdateResult[0][valueEstimateKeyColumnName]
+                _ = self.CWI_executeSQLStatement("""UPDATE ValueEstimates
+                                                                SET estimatedValue = :estimatedvalue
+                                                                WHERE valueEstimateKey = :valueestimatekey""",
+                                                 carDataValues.data,
+                                                 False,
+                                                 True)
+            # else no new estimated value provided, so no update needed
         else:
             self._insertValueEstimateWithOpenTransaction(carDataValues)
 
@@ -362,65 +435,6 @@ class carWorkInventorySQL(baseSQL):
                                                         WHERE carKey = :carkey""",
                                          carDataValues.data,
                                          False)
-
-    def nonParentExistsForParentTable(self, unsafeParentTableName: str, unsafeParentKeyColumnName: str) -> bool:
-        """
-        Determines if the given parent table name has any primary keys that do not have any child rows
-        Assumes that the parent table only has
-        :param unsafeParentKeyColumnName:
-        :param unsafeParentTableName:
-        :return:
-        """
-        # TODO: To be tested
-        # Ensure that the parent table name and parent key column name is a valid table and column name in the database schema
-        table_name_res, _ = self.executeSQLStatement("""SELECT sch.tbl_name as table_name,
-                                                                           tbl_info.name as column_name
-                                                                    FROM sqlite_schema sch, 
-                                                                         pragma_table_xinfo(sch.tbl_name) tbl_info
-                                                                    WHERE sch.type = 'table'
-                                                                    AND sch.tbl_name = ?
-                                                                    AND tbl_info.name = ?""",
-                                                     (unsafeParentTableName, unsafeParentKeyColumnName),
-                                                     columnNamesClassWrapper=None)
-        if len(table_name_res) <= 0:
-            raise ValueError(f"Parent table does not exist: {unsafeParentTableName}.")
-        elif len(table_name_res) > 1:
-            raise ValueError(f"More than one {unsafeParentTableName} table exists. This should not be possible.")
-
-        # Use the table name and column name from the query since we know those should be safe
-        # instead of the arguments
-        safeParentTableName = table_name_res[0].pop('table_name')
-        safeParentKeyColumnName = table_name_res[0].pop('column_name')
-
-        table_column_res, _ = self.executeSQLStatement(f"""SELECT *
-                                                           FROM pragma_table_xinfo()""")
-
-        # Get all child table names for parentTableName and the associated child key column
-        child_tables_res, _ = self.executeSQLStatement("""SELECT sch.tbl_name as child_table_name, 
-                                                                             fkl.from as child_key_column 
-                                                                      FROM sqlite_schema sch,
-                                                                           pragma_foreign_key_list(sch.tbl_name) fkl
-                                                                      WHERE sch.type = 'table'
-                                                                      AND fkl.table = ?
-                                                                      AND fkl.to = ?""",
-                                                       (safeParentTableName, safeParentKeyColumnName),
-                                                       columnNamesClassWrapper=None)
-
-        # Dynamically build out a query to see if the parent table has any non-parent rows
-        nonParentPurchaseSelectQuery = f"SELECT * FROM {safeParentTableName} parent WHERE NOT ("
-        for index, child_table_row in enumerate(child_tables_res):
-            child_table_name, child_key_column_name = child_table_row.items()
-            nonParentPurchaseSelectQuery += f"EXISTS(SELECT 1 FROM {child_table_name} WHERE {child_key_column_name} = parent.{safeParentKeyColumnName}"
-            if index != len(child_tables_res) - 1:
-                nonParentPurchaseSelectQuery += " OR"
-        nonParentPurchaseSelectQuery += ")"
-
-        nonParentRowsResult, _ = self.executeSQLStatement(nonParentPurchaseSelectQuery,
-                                                          columnNamesClassWrapper=None)
-
-        # If the query returned any rows
-        # then there exists a row in the given parent table that does not have a child row
-        return len(nonParentRowsResult) > 0
 
     @staticmethod
     def CWISqlAuthorizerCallback(actionCode: int, actionParam1 : str | None, actionParam2: str | None, databaseName: str | None, responsibleTriggerOrViewName: str | None) -> int | None:

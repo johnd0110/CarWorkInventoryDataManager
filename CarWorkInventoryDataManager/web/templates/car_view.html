@@ -7,11 +7,11 @@
 
     {{ tables.displayResults('singlecar', carssqlres) }}
     {% set endpointViewName = request.endpoint.split(".")[-1] %}
-    {% set carkey = request.view_args['keyorid'] %}
+    {% set carkey = request.view_args['key'] %}
     {# Mini navigation bar to toggle between viewing items or item group transactions and related form #}
     <ul>
-        <li><a href={{url_for('web_car.car_items', keyorid=carkey)}}>Items</a></li>
-        <li><a href={{url_for('web_car.car_igt', keyorid=carkey)}}>Item groups</a></li>
+        <li><a href={{url_for('web_car.car_items', key=carkey)}}>Items</a></li>
+        <li><a href={{url_for('web_car.car_igt', key=carkey)}}>Item groups</a></li>
     </ul>
 
     {% if endpointViewName == "car_items" %}
@@ -19,7 +19,7 @@
         {{ forms.generateStandardEntryForm('items', itemssqlres[1]) }}
     {% elif endpointViewName == "car_igt" %}
         {{ tables.displayResults('igt', igtsqlres, nestRowThreshold=1, captiontext="Item Groups i.e. Itemized Purchases | To view all items use the above Items Link") }}
-        {{ forms.generateTableEntryForm('igt', igtsqlres[1], igtFormTablePreFillData) }}
+        {{ forms.generateTableEntryForm('igt', igtsqlres[1], igtFormTablePreFillData, igtFormTableIncludeNewRow) }}
     {% endif %}
 
     {{ tables.displayResults('workefforts', workeffortssqlres) }}

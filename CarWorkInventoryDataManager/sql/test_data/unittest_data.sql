@@ -1,5 +1,6 @@
 DELETE FROM PurchasesHistory;
 DELETE FROM WorkEfforts;
+DELETE FROM ItemsToCars;
 DELETE FROM Items;
 DELETE FROM ItemGroupTransactions;
 DELETE FROM Cars;
@@ -13,15 +14,15 @@ VALUES (1, 1234.99), (2, 5000), (3, 20000), (4, 0);
 
 -- Car Value Estimate Table Data
 INSERT INTO ValueEstimates(valueEstimateKey, estimatedValue)
-VALUES (1, 50000), (2, 3000);
+VALUES (1, 0), (2, 0), (3, 50000), (4, 3000);
 
 -- Cars Table Test Data
 INSERT INTO Cars(carKey, purchaseKey, valueEstimateKey, make, model, "year", engineType, mileage, additionalNotes)
 VALUES
-(1, 1, NULL, "toyota", "corolla", 2012, "test", 50000, "test"),
-(2, 2, NULL, "mitsubishi", "kodomo", 1999, "testtest", 1000, "test"),
-(3, 3, 1, "chevy", "corvette", 1969, "V8", 100000, "test"),
-(4, 4, 2, "ford", "ranger", 2012, "v9", 0, "test");
+(1, 1, 1, "toyota", "corolla", 2012, "test", 50000, "test"),
+(2, 2, 2, "mitsubishi", "kodomo", 1999, "testtest", 1000, "test"),
+(3, 3, 3, "chevy", "corvette", 1969, "V8", 100000, "test"),
+(4, 4, 4, "ford", "ranger", 2012, "v9", 0, "test");
 
 -- Items Purchases Table Test Data
 INSERT INTO Purchases(purchaseKey, taxesPaid, shippingCost, cost, refundAmount)
@@ -40,11 +41,19 @@ VALUES (5, 100, 100, 1000, 0),
        (17, 123, 12, 1, 136);
 
 INSERT INTO ValueEstimates(valueEstimateKey, estimatedValue)
-VALUES (3, 1000),
-       (4, 123),
-       (5, 6),
-       (6, 500),
-       (7, 100);
+VALUES (5, 1000),
+       (6, 0),
+       (7, 0),
+       (8, 123),
+       (9, 6),
+       (10, 500),
+       (11, 100),
+       (12, 0),
+       (13, 0),
+       (14, 0),
+       (15, 0),
+       (16, 0),
+       (17, 0);
 
 -- Item Group Transactions Table Test Data
 INSERT INTO ItemGroupTransactions(itemGroupTransactionKey, description)
@@ -60,20 +69,35 @@ VALUES (1, ''),
        (10, '');
 
 -- Items Table Test Data
-INSERT INTO Items(itemKey, inCarKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes)
-VALUES (1, 1, 1, 3, 5, 'store', "engine", ''),
-(2, 1, 1, NULL, 6, 'store', "alternator", ''),
-(3, 1, 1, NULL, 7, 'store', "spark plug", ''),
-(4, 1, 2, 4, 8, 'store', "tire", ''),
-(5, 1, 3, 5, 9, 'store', "stereo", ''),
-(6, 2, 4, 6, 10, 'store', "engine", ''),
-(7, 3, 5, 7, 11, 'store', "hub cap", ''),
-(8, 3, 5, NULL, 12, 'store', "front lights", ''),
-(9, 3, 6, NULL, 13, 'store', "brake pad", ''),
-(10, 3, 7, NULL, 14, 'store', "axle", ''),
-(11, 4, 8, NULL, 15, 'store', 'front bumper', ''),
-(12, 4, 9, NULL, 16, 'store', 'back bumper', ''),
-(13, 4, 10, NULL, 17, 'store', 'key replacement', '');
+INSERT INTO Items(itemKey, itemGroupTransactionKey, valueEstimateKey, purchaseKey, source, itemName, additionalNotes, isGeneralPurpose)
+VALUES (1, 1, 5, 5, 'store', "engine", '', FALSE),
+(2, 1, 6, 6, 'store', "alternator", '', FALSE),
+(3, 1, 7, 7, 'store', "spark plug", '', FALSE),
+(4, 2, 8, 8, 'store', "tire", '', FALSE),
+(5, 3, 9, 9, 'store', "stereo", '', FALSE),
+(6, 4, 10, 10, 'store', "engine", '', FALSE),
+(7, 5, 11, 11, 'store', "hub cap", '', FALSE),
+(8, 5, 12, 12, 'store', "front lights", '', FALSE),
+(9, 6, 13, 13, 'store', "brake pad", '', FALSE),
+(10, 7, 14, 14, 'store', "axle", '', FALSE),
+(11, 8, 15, 15, 'store', 'front bumper', '', FALSE),
+(12, 9, 16, 16, 'store', 'back bumper', '', FALSE),
+(13, 10, 17, 17, 'store', 'key replacement', '', FALSE);
+
+INSERT INTO ItemsToCars(itemKey, carKey)
+VALUES (1,1),
+(2,1),
+(3,1),
+(4,1),
+(5,1),
+(6,2),
+(7,3),
+(8,3),
+(9,3),
+(10,3),
+(11,4),
+(12,4),
+(13,4);
 
 -- Employees Table Test Data
 INSERT INTO Employees(employeeKey, employeeName) VALUES
