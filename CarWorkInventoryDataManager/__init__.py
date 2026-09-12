@@ -24,9 +24,10 @@ def create_and_initialize_app():
     from templateFilters import groupSqlResultsByColumns
     new_app.jinja_env.filters['groupSqlResultsByColumns'] = groupSqlResultsByColumns
 
-    from customCLI import initializeCWITestData, initializeCWIDbSchema
+    from customCLI import initializeCWITestData, initializeCWIDbSchema, backupCWIDb
     new_app.cli.add_command(initializeCWITestData)
     new_app.cli.add_command(initializeCWIDbSchema)
+    new_app.cli.add_command(backupCWIDb)
 
     # Make some html enums and text mappings available to all templates
     def htmlEnumProcessor():

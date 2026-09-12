@@ -9,7 +9,10 @@ It allows for recording of cars, the items purchased and used for a particular c
 ### Features:
 #### Data Persistence via SQLite
 - Car Information (make, model, year, engine type, etc.)
-- Item Information (Item Name, Where it was sourced from, additional notes that can't be categorized)
+- Item Information (Item Name, Where it was sourced from, additional notes that can't be categorized, whether it is general purpose or not)
+  - A general purpose item is an item that could be used across multiple projects and may be associated to multiple projects, but does not necessarily live strictly tied to one project
+    - Example: Tools, paint, etc.
+    - **NOTE: Currently in development, partially implemented as of 9/12/2026**
 - Purchase data (Taxes paid amount, shipping cost, actual cost of the item, and refunded amount)
   - Change history is also recorded
 - Value Estimate data
@@ -61,8 +64,10 @@ It allows for recording of cars, the items purchased and used for a particular c
     - Clears out existing database data and prepopulates it with fake test data 
       - **<ins>DELETES ALL EXISTING DATA THUS: TESTING config option must be true for this to run</ins>**
   - `initDb`
-    - Rebuilds database schema using `sql/schema/schema.sql` and prints out the entire schema after it is done.
+    - Rebuilds database schema using [sql/schema/schema.sql](CarWorkInventoryDataManager/sql/schema/schema.sql) and prints out the entire schema after it is done.
       - **<ins>WARNING: DELETES ALL EXISTING DATA</ins>**
+  - `backupDb`
+    - Creates a backup of the database at [sql/backups](CarWorkInventoryDataManager/sql/databases/backups/) with the backup timestamp in the file name.
 ## Setup Instructions
 ### Dependencies:
 - Python >= 3.14

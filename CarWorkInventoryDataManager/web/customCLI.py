@@ -50,3 +50,13 @@ def initializeCWIDbSchema():
         tables, _ = setup_db.executeSQLStatement("SELECT * FROM sqlite_schema")
         for table in tables:
             print(table)
+
+@click.command('backupDb')
+@cli.with_appcontext
+def backupCWIDb():
+    """
+    Custom CLI command function to request a database backup be made.
+    :return: Nothing
+    """
+    from db import backupDb
+    backupDb()

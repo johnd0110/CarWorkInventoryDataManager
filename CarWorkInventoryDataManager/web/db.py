@@ -1,13 +1,14 @@
 from pathlib import Path
 from flask import current_app, g
 
+from CarWorkInventoryDataManager.sql import CWIDatabaseFactory
+
 def get_CWI_db(useOnlyDatabaseURI=False):
     """
     Factory for connecting to a database within a Flask application for a car work inventory application.
     :return: An instance of the CWI Database object, should be the same instance across calls
     """
     if 'db' not in g:
-        from CarWorkInventoryDataManager.sql import CWIDatabaseFactory
         databaseURI = current_app.config['DATABASE_URI']
         g.db = CWIDatabaseFactory(Path(__file__).parent.parent.resolve() / databaseURI if not useOnlyDatabaseURI else databaseURI)
 
@@ -44,3 +45,20 @@ def ensureCompleteData(func):
 
         return result
     return inner
+
+def backupDb():
+    db = get_CWI_db()
+
+    import datetime
+    todayStr = datetime.datetime.now().strftime('%m-%d-%Y_%I-%M-%S')
+
+    backupFileName = f"{todayStr}_CWIDb_Backup.db"
+    backupFileLocation = Path(__file__).parent.parent.resolve() / "sql" / "databases" / "backups" / backupFileName
+    backupDb = CWIDatabaseFactory(backupFileLocation)
+    with backupDb.connection as backupTarget:
+        db.connection.backup(backupTarget)
+
+    db.cleanup()
+    backupDb.cleanup()
+    print(f"Backup complete at location: {backupFileLocation}")
+
