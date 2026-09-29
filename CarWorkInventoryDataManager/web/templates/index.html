@@ -8,4 +8,7 @@
 
     {{ tables.displayResults('employees', employeessqlres) }}
     {{ forms.generateStandardEntryForm('employees', employeessqlres[1]) }}
+
+    {{ tables.displayResults('generalpurposeitems', generalpurposesqlres, captiontext="General Purpose Items") }}
+    {{ forms.generateTableEntryForm("generalpurposeitems", generalpurposesqlres[1], gpiPreFillData, gpiFormTableIncludeNewRow) }}
 {% endblock %}

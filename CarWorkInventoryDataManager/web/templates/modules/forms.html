@@ -2,9 +2,9 @@
     {% if webAttributes.InputType == InputTypes.DROPDOWN.value %}
         {% if webAttributes.HasValidDropDownData() %}
             {% set dropDownData = webAttributes.dropDownData %}
-            <select form={{formId}} id={{inputId}} name={{dropDownData[2]}} {{"required" if webAttributes.requiredInput}}>
+            <select form={{formId}} id={{inputId}} name={{dropDownData[3]}} {{"required" if webAttributes.requiredInput}}>
                 {% for row in dropDownData[1] %}
-                    <option value={{row[dropDownData[0]]}} {{"selected" if value == row[dropDownData[0]]}}>{{row[sqlColumnName]}}</option>
+                    <option value={{row[dropDownData[0]]}} {{"selected" if (value | string) == (row[dropDownData[0]] | string)}}>{{row[sqlColumnName] if dropDownData[2] is none else dropDownData[2](row)}}</option>
                 {% endfor %}
             </select>
         {% endif %}
@@ -80,8 +80,8 @@
                         {% call(columnName, webAttrs, id) _renderInputRelatedElements(tableColumnsAndAttributes) %}
                             {% if not webAttrs.isGroupInput or (parentLoop.first and webAttrs.isGroupInput) %}
                                 <td headers={{columnName ~ tableCellIdPrefix}} {{"rowspan="~tableRowSize if parentLoop.first and webAttrs.isGroupInput}}>
-                                    {% set prefillcelldata = prefilltabledata[index][columnName] if index + 1 <= prefilltablesize else None %}
-                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefillcelldata if prefillcelldata != "" else None, loop.last)}}
+                                    {% set prefillcelldata = prefilltabledata[index][columnName] if index + 1 <= prefilltablesize else none %}
+                                    {{_generateInputElementAndLabelFromWebAttributes(columnName, webAttrs, id, formId, true, prefillcelldata if prefillcelldata != "" else none, loop.last)}}
                                 </td>
                             {% endif %}
                         {% endcall %}

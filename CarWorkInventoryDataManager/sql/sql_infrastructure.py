@@ -39,12 +39,12 @@ class baseSQL:
     def executeSQLStatement[columnNamesGenericType: columnNames](self, SQLStatement: str, placeholderValues: tuple | dict = (), columnNamesClassWrapper: type[columnNamesGenericType] | None = columnNames, IsScript=False, keepTransactionOpen: bool = False) -> tuple[list, columnNamesGenericType | None]:
         """
         Creates a cursor and then executes a sql statement with the provided placeholder values
-        :param keepTransactionOpen: Boolean to determine whether to keep the transaction open after the statement executes.
         :param SQLStatement: A SQL statement to execute. If IsScript is True, then this is assumed to be a script.
         :param placeholderValues: Values for the placeholders in the statement. If IsScript is True, then this does nothing.
         :param columnNamesClassWrapper: If None, then no column names are provided in the returned tuple, otherwise a columnNames inherited class is used to store and decorate the column names from the query.
                                         If IsScript is True, returned column names may not be usable or just empty.
         :param IsScript: If true run SqlStatement as a script via executeScript otherwise execute SqlStatement as a regular query.
+        :param keepTransactionOpen: Boolean to determine whether to keep the transaction open after the statement executes.
         :return: The result of the execute statement which may be the result set for a SELECT query or
                  nothing useful for other queries like INSERT paired with the queries' column names along with a blank slate of decorated (if at all) column names
                  UNLESS a returning clause is provided, in which case the results will be that of the returning clause

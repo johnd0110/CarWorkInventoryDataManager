@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Any
+from collections.abc import Callable
 
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
-from datastructures import VisibilityOptions, InputTypes, WrapOptions
+from .htmlEnums import VisibilityOptions, InputTypes, WrapOptions
 from CarWorkInventoryDataManager.sql.sql_infrastructure import columnNames
 
 @dataclass
@@ -11,7 +12,9 @@ class columnWebAttributes:
     Attributes for a dynamically built HTML table column.
     dropDownData: A Tuple consisting of:
                   The SQL Column Name to pull data and attach to a given dropdown selection,
-                  The SQL data to pull the options from as well as the values to associate with the options,
+                  The SQL data to pull the options from as well as the values to associate with the options
+                  A callable to generate a decode for the drop-down option using the drop-down data
+                     or None to default to using the column attribute column name to retrieve a decode from the drop-down data
                   The SQL Column Name to save the selected data to
     visibility: Visibility attribute to assign to the column
     InputType: A InputType Enum value to designate what kind of input to create on the HTML document if an input is needed
@@ -39,7 +42,7 @@ class columnWebAttributes:
     default: dict of a value to compare and replace with default text and the default text to use
     isGroupInput: True if the given column should only be a form input that spans an entire grouped entry (Only one input of this kind for the whole group)
     """
-    dropDownData: tuple[str, list, str] = None
+    dropDownData: tuple[str, list, Callable[[lowerCaseKeyDict], str] | None, str] = None
     visibility: str = VisibilityOptions.INITIAL.value
     InputType: InputTypes = InputTypes.NOTINPUT.value
     InputAlias: str = None
@@ -66,8 +69,13 @@ class columnWebAttributes:
         # May want to check if the sql column names in the data are valid columns, but I do not yet the cleanest method to do so.
         if not self.dropDownData: return False
 
-        for item in self.dropDownData:
-            if not item:
+        for index, item in enumerate(self.dropDownData):
+            # The item at index 2 can be a function pointer or None, if it is neither of those then it is invalid
+            if index == 2:
+                item3IsValid = callable(item) or item is None
+                if not item3IsValid:
+                    return False
+            elif not item:
                 return False
         return True
 

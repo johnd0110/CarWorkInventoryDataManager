@@ -4,7 +4,7 @@ import sqlite3
 
 from ..common_helper import lowerCaseKeyDict
 from .sql_infrastructure import baseSQL
-from datastructures import columnNamesAndAttributes, VisibilityOptions
+from ..web.datastructures import columnNamesAndAttributes, VisibilityOptions
 
 class queryCaller(Protocol):
     def __call__(self, param: int) -> tuple[list, columnNamesAndAttributes]:
@@ -40,6 +40,16 @@ class carWorkInventorySQL(baseSQL):
                                         placeholderValues,
                                         columnNamesClassWrapper=columnNamesAndAttributes if returnColumnNames else None,
                                         keepTransactionOpen=keepTransactionOpen)
+
+    @autoSetHiddenColumnsByNames(["carKey"])
+    def getCars(self) -> tuple[list, columnNamesAndAttributes | None]:
+        return self.CWI_executeSQLStatement("""SELECT c.carKey, 
+                                                      c.make, 
+                                                      c.model, 
+                                                      c.year, 
+                                                      c.engineType, 
+                                                      c.mileage
+                                                      FROM Cars c""")
 
     @autoSetHiddenColumnsByNames(["carKey", "purchaseKey"])
     def getCarsWithViewEditLinksAndTotalValue(self) -> tuple[list, columnNamesAndAttributes | None]:
@@ -212,6 +222,8 @@ class carWorkInventorySQL(baseSQL):
                                                ON itm.purchaseKey = p.purchaseKey
                                                JOIN Cars c
                                                ON itc.carKey = c.carKey
+                                               LEFT JOIN ValueEstimates ve
+                                               ON itm.valueEstimateKey = ve.valueEstimateKey
                                                WHERE itm.isGeneralPurpose = TRUE""")
     
     @autoSetHiddenColumnsByNames(["employeeKey"])
@@ -384,6 +396,23 @@ class carWorkInventorySQL(baseSQL):
 
             if index == 0:
                 itemGroupTransactionKey = itemDataValues["itemgrouptransactionkey"]
+
+    def insertGeneralPurposeItemWithOneOrMoreCarLinks(self, generalPurposeItemDataValues: list[lowerCaseKeyDict]):
+        # Assume that first row contains item data + car link data
+        # If for some reason the other rows have item data, it is ignored
+        # The rest of the data rows (if any) should just be car link data
+        itemKeyResults, _ = self.insertSingleItem(generalPurposeItemDataValues[0], defaultNotGeneralPurpose=False, keepTransactionOpen=True)
+
+        if len(generalPurposeItemDataValues) > 1:
+            itemKey = itemKeyResults[0]["itemKey"]
+
+            # First element already handled above, so use 2nd element onwards
+            for dataValues in generalPurposeItemDataValues[1:]:
+                dataValues["itemKey"] = itemKey
+
+                self._insertItemToCarLinkWithOpenTransaction(dataValues)
+
+        self.connection.commit()
 
     def insertWorkEffort(self, workEffortDataValues: lowerCaseKeyDict):
         return self.CWI_executeSQLStatement("""INSERT INTO WorkEfforts(carKeyWorkedOn, employeeKey, workEffortDate, laborHours, estimatedPay, workType) 

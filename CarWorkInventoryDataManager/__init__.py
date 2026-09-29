@@ -13,30 +13,30 @@ def create_and_initialize_app():
     new_app.config.from_object(default_config)
     new_app.config.from_prefixed_env()
 
-    from blueprints import web_car, web_home, web_purchase_data
+    from .web.blueprints import web_car, web_home, web_purchase_data
     new_app.register_blueprint(web_car)
     new_app.register_blueprint(web_home)
     new_app.register_blueprint(web_purchase_data)
 
-    from db import setupDbInfrastructureForApp
+    from .web.db import setupDbInfrastructureForApp
     setupDbInfrastructureForApp(new_app)
 
-    from templateFilters import groupSqlResultsByColumns
+    from .web.templateFilters import groupSqlResultsByColumns
     new_app.jinja_env.filters['groupSqlResultsByColumns'] = groupSqlResultsByColumns
 
-    from customCLI import initializeCWITestData, initializeCWIDbSchema, backupCWIDb
+    from .web.customCLI import initializeCWITestData, initializeCWIDbSchema, backupCWIDb
     new_app.cli.add_command(initializeCWITestData)
     new_app.cli.add_command(initializeCWIDbSchema)
     new_app.cli.add_command(backupCWIDb)
 
     # Make some html enums and text mappings available to all templates
     def htmlEnumProcessor():
-        from datastructures import InputTypes, VisibilityOptions
+        from .web.datastructures import InputTypes, VisibilityOptions
         return dict(InputTypes=InputTypes, VisibilityOptions=VisibilityOptions)
     new_app.context_processor(htmlEnumProcessor)
 
     def textMappingProcessor():
-        from mappings import getTextMapping
+        from .web.mappings import getTextMapping
         return dict(textMap=getTextMapping())
     new_app.context_processor(textMappingProcessor)
 

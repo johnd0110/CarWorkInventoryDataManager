@@ -1,6 +1,6 @@
 from CarWorkInventoryDataManager.sql.SQL_CONSTANTS import MIN_SQL_YEAR, MAX_SQL_YEAR, MINIMUM_SQL_DATE, MAXIMUM_SQL_DATE
-from datastructures.htmlEnums import InputTypes
-from datastructures import VisibilityOptions
+from .datastructures.htmlEnums import InputTypes
+from .datastructures import VisibilityOptions
 
 def setCarsTableConfig(carsSqlResult):
     carsSqlResult["totalInvestedValue"].decimalPlaces = 2
@@ -47,20 +47,6 @@ def setEmployeesTableConfig(employeesSqlResult):
     employeesSqlResult["employeeName"].InputType = InputTypes.TEXT.value
     employeesSqlResult["employeeName"].requiredInput = True
 
-def setItemGroupTransactionTableConfig(igtsqlCNA):
-    igtsqlCNA["itemGroupTransactionKey"].isNestColumn = True
-
-    igtsqlCNA["itemGroupDescription"].isNestColumn = True
-
-def setItemGroupTransactionTableAndInputConfig(igtsqlCNA):
-    setItemGroupTransactionTableConfig(igtsqlCNA)
-
-    igtsqlCNA["itemGroupDescription"].InputType = InputTypes.TEXTAREA.value
-    igtsqlCNA["itemGroupDescription"].requiredInput = True
-    igtsqlCNA["itemGroupDescription"].isGroupInput = True
-
-    setItemsTableAndInputConfig(igtsqlCNA, True)
-
 def setItemsTableAndInputConfig(itemssqlCNA, includeFooter=False):
     itemssqlCNA["source"].InputType = InputTypes.TEXT.value
     itemssqlCNA["source"].requiredInput = True
@@ -70,8 +56,9 @@ def setItemsTableAndInputConfig(itemssqlCNA, includeFooter=False):
 
     itemssqlCNA["additionalNotes"].InputType = InputTypes.TEXTAREA.value
 
-    itemssqlCNA["isGeneralPurpose"].decimalPlaces = -1
-    itemssqlCNA["isGeneralPurpose"].default = {0: "&#10005;", 1: "&#10003;"}
+    if "isGeneralPurpose" in itemssqlCNA:
+        itemssqlCNA["isGeneralPurpose"].decimalPlaces = -1
+        itemssqlCNA["isGeneralPurpose"].default = {0: "&#10005;", 1: "&#10003;"}
 
     setPurchasesTableAndInputConfig(itemssqlCNA)
 
@@ -156,7 +143,7 @@ def setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlCNA, emplo
 
     workeffortssqlCNA["employeeName"].InputType = InputTypes.DROPDOWN.value
     workeffortssqlCNA["employeeName"].requiredInput = True
-    workeffortssqlCNA["employeeName"].dropDownData = ("employeeKey", employeessqldata, "employeeKey")
+    workeffortssqlCNA["employeeName"].dropDownData = ("employeeKey", employeessqldata, None, "employeeKey")
     workeffortssqlCNA["employeeName"].isNestColumn = True
 
     workeffortssqlCNA["workEffortDate"].InputType = InputTypes.DATE.value

@@ -12,7 +12,7 @@ It allows for recording of cars, the items purchased and used for a particular c
 - Item Information (Item Name, Where it was sourced from, additional notes that can't be categorized, whether it is general purpose or not)
   - A general purpose item is an item that could be used across multiple projects and may be associated to multiple projects, but does not necessarily live strictly tied to one project
     - Example: Tools, paint, etc.
-    - **NOTE: Currently in development, partially implemented as of 9/12/2026**
+    - **NOTE: Currently in development, Mostly implemented as of 9/28/2026**
 - Purchase data (Taxes paid amount, shipping cost, actual cost of the item, and refunded amount)
   - Change history is also recorded
 - Value Estimate data
@@ -68,6 +68,7 @@ It allows for recording of cars, the items purchased and used for a particular c
       - **<ins>WARNING: DELETES ALL EXISTING DATA</ins>**
   - `backupDb`
     - Creates a backup of the database at [sql/backups](CarWorkInventoryDataManager/sql/databases/backups/) with the backup timestamp in the file name.
+    - A regular backup can be made using something like Linux Cron or Windows Task Scheduler to call this command
 ## Setup Instructions
 ### Dependencies:
 - Python >= 3.14
@@ -75,7 +76,7 @@ It allows for recording of cars, the items purchased and used for a particular c
 
 1) Run `initDb` custom flask command. See: [Custom CLI Commands](#custom-cli-commands)
    
-2) Run `python -m flask --app CarWorkInventoryDataManager:create_and_initialize_app run` with the working directory as the project root directory
+2) Run `python -m flask --app CarWorkInventoryDataManager:create_and_initialize_app run`
    - This by default runs Flask in testing mode due to [default_config.py](CarWorkInventoryDataManager/config/default_config.py)
    - _This only runs the application in development mode_
    - **Actual Deployment setup TBD**

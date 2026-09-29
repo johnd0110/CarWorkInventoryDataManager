@@ -119,7 +119,7 @@ class CWIFlaskAppTests(baseTestSuite):
                     </colgroup>
                     <thead>
                         <tr>
-                            <th scope="col" id=carkey_tablecolumn></th>
+                            <th scope="col" id=carkey_tablecolumn>Car</th>
                             <th scope="col" id=make_tablecolumn>Make</th>
                             <th scope="col" id=model_tablecolumn>Model</th>
                             <th scope="col" id=year_tablecolumn>Year</th>
@@ -366,7 +366,7 @@ class CWIFlaskAppTests(baseTestSuite):
                     </colgroup>
                     <thead>
                         <tr>
-                            <th scope="col" id=carkey_tablecolumn></th>
+                            <th scope="col" id=carkey_tablecolumn>Car</th>
                             <th scope="col" id=make_tablecolumn>Make</th>
                             <th scope="col" id=model_tablecolumn>Model</th>
                             <th scope="col" id=year_tablecolumn>Year</th>
@@ -431,7 +431,7 @@ class CWIFlaskAppTests(baseTestSuite):
                     <thead>
                         <tr>
                             <th scope="col" id=itemkey_tablecolumn></th>
-                            <th scope="col" id=carkey_tablecolumn></th>
+                            <th scope="col" id=carkey_tablecolumn>Car</th>
                             <th scope="col" id=source_tablecolumn>Item Source</th>
                             <th scope="col" id=itemname_tablecolumn>Item Name</th>
                             <th scope="col" id=purchasekey_tablecolumn></th>

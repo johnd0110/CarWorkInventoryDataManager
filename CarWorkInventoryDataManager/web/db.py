@@ -50,7 +50,7 @@ def backupDb():
     db = get_CWI_db()
 
     import datetime
-    todayStr = datetime.datetime.now().strftime('%m-%d-%Y_%I-%M-%S')
+    todayStr = datetime.datetime.now().strftime('%m-%d-%Y_%H-%M-%S')
 
     backupFileName = f"{todayStr}_CWIDb_Backup.db"
     backupFileLocation = Path(__file__).parent.parent.resolve() / "sql" / "databases" / "backups" / backupFileName

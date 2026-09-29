@@ -14,7 +14,7 @@ def initializeCWITestData():
         print('Not testing environment, cancelling test data initialization.')
         return
 
-    from db import get_CWI_db
+    from .db import get_CWI_db
     CWI_db = get_CWI_db()
 
     CWI_db.connection.set_authorizer(None)
@@ -58,5 +58,5 @@ def backupCWIDb():
     Custom CLI command function to request a database backup be made.
     :return: Nothing
     """
-    from db import backupDb
+    from .db import backupDb
     backupDb()

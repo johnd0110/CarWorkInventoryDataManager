@@ -1,8 +1,8 @@
 from flask import Blueprint, request, redirect, url_for, Response
 
-from tableConfig import setPurchaseHistoryTableConfig, setPurchasesInputConfig
+from ..tableConfig import setPurchaseHistoryTableConfig, setPurchasesInputConfig
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
-from viewclasses import getPostKeyViewBase
+from ..viewclasses import getPostKeyViewBase
 
 web_purchase_data = Blueprint('web_purchase_data', __name__, url_prefix="/purchase")
 

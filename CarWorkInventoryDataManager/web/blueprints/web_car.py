@@ -2,13 +2,15 @@
 from flask import Blueprint, redirect, url_for, request, Response, session
 
 # Modules / packages in this project
-from tableConfig import setWorkEffortsByCarWithEmployeesTableAndInputConfig, setItemsTableAndInputConfig, setCarsTableAndInputConfig, setCarsTableConfig, setPurchasesTableConfig, setValueEstimatesTableConfig, setItemGroupTransactionTableAndInputConfig
+from ..tableConfig import setWorkEffortsByCarWithEmployeesTableAndInputConfig, setItemsTableAndInputConfig, setCarsTableAndInputConfig, setCarsTableConfig, setPurchasesTableConfig, setValueEstimatesTableConfig
 from CarWorkInventoryDataManager.common_helper import lowerCaseKeyDict
-from viewclasses import getPostKeyViewBase
+from ..viewclasses import getPostKeyViewBase
+from ..datastructures.htmlEnums import InputTypes
 
 web_car = Blueprint('web_car', __name__, url_prefix='/car')
 
 class carView(getPostKeyViewBase):
+    groupInputColumnsByResult = {"igtsqlres": ["itemGroupDescription"]}
     def GET_Handler(self, key) -> dict:
         carssqlres = self.sqlapp.getCarByKey(key)
         setCarsTableConfig(carssqlres[1])
@@ -19,7 +21,16 @@ class carView(getPostKeyViewBase):
         setItemsTableAndInputConfig(itemssqlresult[1], True)
 
         igtsqlres = self.sqlapp.getItemsAndItemGroupTransactionsForCar(key)
-        setItemGroupTransactionTableAndInputConfig(igtsqlres[1])
+        igtsqlCNA = igtsqlres[1]
+        igtsqlCNA["itemGroupTransactionKey"].isNestColumn = True
+
+        igtsqlCNA["itemGroupDescription"].isNestColumn = True
+        igtsqlCNA["itemGroupDescription"].InputType = InputTypes.TEXTAREA.value
+        igtsqlCNA["itemGroupDescription"].requiredInput = True
+        for groupInputColumnName in carView.groupInputColumnsByResult["igtsqlres"]:
+            igtsqlCNA[groupInputColumnName].isGroupInput = True
+
+        setItemsTableAndInputConfig(igtsqlCNA, True)
 
         workeffortssqlresults = self.sqlapp.getWorkEffortByCarWithEmployees(key)
         setWorkEffortsByCarWithEmployeesTableAndInputConfig(workeffortssqlresults[1],
@@ -46,65 +57,17 @@ class carView(getPostKeyViewBase):
                 _ = self.sqlapp.insertWorkEffort(form)
                 redirectLocation = request.endpoint
             case "igt_form":
-                form = lowerCaseKeyDict(request.form.to_dict(flat=False))
-                print(form)
-                tableData = []
-                for columnName, valueList in form.items():
-                    if columnName in ('addnewrow', 'deleterow', 'formid'):
-                        continue
-                    print(columnName, valueList)
-                    for index, value in enumerate(valueList):
-                        if len(tableData) <= index:
-                            tableData.append(lowerCaseKeyDict({columnName: value}))
-                        else:
-                            if columnName in tableData[index]:
-                                raise ValueError(
-                                    f"Unexpected Error: {columnName} already exists at row dictionary index: {index}")
-                            tableData[index][columnName] = value
-
                 redirectLocation = '.car_igt'
-                if ('addnewrow' in form) ^ ('deleterow' in form):
-                    # Convert lowercasekeydict to regular dictionaries for serialization
-                    tableDataForSession = [rowdata.data for ind, rowdata in enumerate(tableData) if (int(form.get('deleterow', [-1])[0]) != ind)]
-                    noSessionTableDataExists = len(tableDataForSession) == 0
-                    if not noSessionTableDataExists:
-                        # Shift the itemgroupdescription to the next row
-                        igtDescription = None
-                        for row in tableData:
-                            if 'itemgroupdescription' in row:
-                                igtDescription = row.pop('itemgroupdescription')
 
-                        if igtDescription is None:
-                            raise RuntimeError(
-                                "Unexpected Error: No Item group description found while adding or deleting a row.")
+                def appendCarKey(tblData):
+                    for row in tblData:
+                        row["carKey"] = key
 
-                        tableDataForSession[0]['itemgroupdescription'] = igtDescription
-                    # else Last row was deleted, therefore just let the table reset
-
-                    self.viewSessionData["igtFormTablePreFillData"] = tableDataForSession
-                    self.viewSessionData["igtFormTableIncludeNewRow"] = ('addnewrow' in form) or noSessionTableDataExists
-                    session.modified = True
-                elif 'submit' in form:
-                    itemDictWithIgtDescriptionIndex = None
-                    for index, itemDict in enumerate(tableData):
-                        itemDict['carkey'] = key
-                        if "itemgroupdescription" in itemDict:
-                            if itemDictWithIgtDescriptionIndex is not None:
-                                raise RuntimeError("Unexpected Error: Additional Item Group Transaction Item Row with a description found.")
-                            itemDictWithIgtDescriptionIndex = index
-
-                    # Make sure the row with the item group description is at the start of the list.
-                    if itemDictWithIgtDescriptionIndex is None:
-                        raise RuntimeError("Unexpected Error: No Item group transaction description found on form submission.")
-
-                    tableData.insert(0, tableData.pop(itemDictWithIgtDescriptionIndex))
-
-                    _ = self.sqlapp.insertMultipleItems(tableData)
-                    _ = self.viewSessionData.pop('igtFormTablePreFillData', None)
-                    _ = self.viewSessionData.pop('igtFormTableIncludeNewRow', None)
-                    session.modified = True
-                else:
-                    raise NotImplementedError
+                self.tableEntryForm_Handler("igtFormTablePreFillData",
+                                            "igtFormTableIncludeNewRow",
+                                            "igtsqlres",
+                                            lambda tblData: self.sqlapp.insertMultipleItems(tblData),
+                                            appendCarKey)
             case _:
                 raise NotImplementedError
 
